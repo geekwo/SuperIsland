@@ -133,7 +133,7 @@ final class VolumeManager: ObservableObject {
     private func startMediaMonitoring() {
         mediaRefreshToken = ModuleRefreshScheduler.shared.register(
             id: "volume.mediaApps",
-            name: "Media app volume refresh",
+            name: String(localized: "Media app volume refresh"),
             module: .builtIn(.volumeHUD),
             policy: .visibleOnly(8, tolerance: 2),
             enabled: { AppState.shared.volumeHUDEnabled }

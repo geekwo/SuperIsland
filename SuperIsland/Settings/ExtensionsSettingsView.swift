@@ -12,8 +12,8 @@ private enum ExtensionListFilter: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .all: return "All"
-        case .active: return "Active"
+        case .all: return String(localized: "All")
+        case .active: return String(localized: "Active")
         }
     }
 }
@@ -69,7 +69,7 @@ struct ExtensionsSettingsView: View {
 
             Spacer(minLength: 0)
 
-            Text("\(filteredManifests.count) shown")
+            Text(String(format: String(localized: "%d shown"), filteredManifests.count))
                 .font(.caption)
                 .foregroundColor(.secondary)
 
@@ -212,7 +212,7 @@ struct ExtensionsSettingsView: View {
 
                 Spacer()
 
-                Text(manager.runtimes[manifest.id] == nil ? "Inactive" : "Active")
+                    Text(manager.runtimes[manifest.id] == nil ? String(localized: "Inactive") : String(localized: "Active"))
                     .font(.caption.weight(.semibold))
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
@@ -228,7 +228,7 @@ struct ExtensionsSettingsView: View {
                 .foregroundColor(.secondary)
 
             HStack(spacing: 10) {
-                Button(manager.runtimes[manifest.id] == nil ? "Activate" : "Reload") {
+                Button(manager.runtimes[manifest.id] == nil ? String(localized: "Activate") : String(localized: "Reload")) {
                     if manager.runtimes[manifest.id] == nil {
                         manager.activate(extensionID: manifest.id)
                     } else {
@@ -349,7 +349,7 @@ struct ExtensionsSettingsView: View {
 
     private func metadataRow(label: String, value: String) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
-            Text(label)
+            Text(localizedString(label))
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundColor(.secondary)
                 .frame(width: 90, alignment: .leading)
@@ -382,9 +382,9 @@ struct ExtensionsSettingsView: View {
 
     private func extensionSource(for manifest: ExtensionManifest) -> (label: String, color: Color) {
         if isInstalledExtension(manifest) {
-            return ("Installed", Color.accentColor)
+            return (String(localized: "Installed"), Color.accentColor)
         }
-        return ("Bundled", .secondary)
+        return (String(localized: "Bundled"), .secondary)
     }
 
     private func isInstalledExtension(_ manifest: ExtensionManifest) -> Bool {

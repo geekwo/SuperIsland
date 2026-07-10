@@ -232,7 +232,7 @@ final class WeatherManager: NSObject, ObservableObject {
         Task { @MainActor [weak self] in
             self?.refreshToken = ModuleRefreshScheduler.shared.register(
                 id: "weather.refresh",
-                name: "Weather refresh",
+                name: String(localized: "Weather refresh"),
                 module: .builtIn(.weather),
                 policy: .visibleOnly(Constants.weatherRefreshInterval, tolerance: 300),
                 enabled: { AppState.shared.weatherEnabled }

@@ -113,7 +113,7 @@ struct NotificationExpandedView: View {
 
     private var footerBar: some View {
         HStack(spacing: 6) {
-            Text("\(manager.recentNotifications.count) notification\(manager.recentNotifications.count == 1 ? "" : "s")")
+            Text(notificationCountLabel)
                 .font(.system(size: 9, weight: .medium))
                 .foregroundColor(.white.opacity(0.34))
 
@@ -137,6 +137,13 @@ struct NotificationExpandedView: View {
 
     private func featuredNotification(_ notification: IslandNotification, chrome: NotificationRowChrome) -> some View {
         notificationRow(notification, featured: true, chrome: chrome)
+    }
+
+    private var notificationCountLabel: String {
+        if manager.recentNotifications.count == 1 {
+            return String(localized: "1 notification")
+        }
+        return String(format: String(localized: "%d notifications"), manager.recentNotifications.count)
     }
 
     private func notificationRow(_ notification: IslandNotification, featured: Bool, chrome: NotificationRowChrome) -> some View {

@@ -450,7 +450,7 @@ final class ExtensionManager: ObservableObject {
 
         refreshTokens[manifest.id] = ModuleRefreshScheduler.shared.register(
             id: "extension.\(manifest.id).refresh",
-            name: "\(manifest.name) extension refresh",
+            name: String(format: String(localized: "%@ extension refresh"), manifest.name),
             module: module,
             policy: policy,
             enabled: { [weak self] in

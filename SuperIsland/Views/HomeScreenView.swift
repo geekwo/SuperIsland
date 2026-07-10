@@ -158,7 +158,7 @@ private struct HomeNowPlayingPanel: View {
             return "\(artist) • \(album)"
         }
 
-        return artist ?? album ?? "Media"
+        return artist ?? album ?? String(localized: "Media")
     }
 
     private var durationLine: String {
@@ -278,12 +278,12 @@ private struct HomeCalendarPanel: View {
 
     private var todaySubtitle: String {
         if upcomingEvents.isEmpty {
-            return "No events scheduled today"
+            return String(localized: "No events scheduled today")
         }
         if upcomingEvents.count == 1 {
-            return "1 event coming up"
+            return String(localized: "1 event coming up")
         }
-        return "\(upcomingEvents.count) events coming up"
+        return String(format: String(localized: "%d events coming up"), upcomingEvents.count)
     }
 
     private func countdown(for event: EKEvent) -> String? {
@@ -389,7 +389,7 @@ private struct HomeWeatherPanel: View {
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundStyle(tint)
 
-                Text(title)
+                Text(localizedString(title))
                     .font(HomeTypography.badgeFont)
                     .foregroundStyle(HomeTypography.tertiaryText)
             }
@@ -415,7 +415,7 @@ private struct HomeEventRow: View {
                 .padding(.top, 5)
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(event.title ?? "Upcoming event")
+                Text(event.title ?? String(localized: "Upcoming event"))
                     .font(HomeTypography.bodyTitleFont)
                     .foregroundStyle(HomeTypography.secondaryText)
                     .lineLimit(1)
@@ -485,11 +485,11 @@ private struct HomeEmptyState: View {
                 .foregroundStyle(HomeTypography.tertiaryText)
                 .padding(.bottom, 2)
 
-            Text(title)
+            Text(localizedString(title))
                 .font(HomeTypography.bodyTitleFont)
                 .foregroundStyle(HomeTypography.primaryText.opacity(0.9))
 
-            Text(subtitle)
+            Text(localizedString(subtitle))
                 .font(HomeTypography.secondaryFont)
                 .foregroundStyle(HomeTypography.secondaryText)
                 .multilineTextAlignment(.center)

@@ -345,7 +345,7 @@ final class NotificationManager: ObservableObject {
     private func startWhatsAppLogMonitor() {
         whatsappLogRefreshToken = ModuleRefreshScheduler.shared.register(
             id: "notifications.whatsappLog",
-            name: "WhatsApp notification log scan",
+            name: String(localized: "WhatsApp notification log scan"),
             module: .builtIn(.notifications),
             policy: .interval(15, tolerance: 5),
             enabled: { AppState.shared.notificationsEnabled }
@@ -954,7 +954,7 @@ final class NotificationManager: ObservableObject {
     private func startDeliveredNotificationMonitor() {
         deliveredNotificationRefreshToken = ModuleRefreshScheduler.shared.register(
             id: "notifications.delivered",
-            name: "Delivered notification scan",
+            name: String(localized: "Delivered notification scan"),
             module: .builtIn(.notifications),
             policy: .interval(10, tolerance: 3),
             enabled: { AppState.shared.notificationsEnabled }

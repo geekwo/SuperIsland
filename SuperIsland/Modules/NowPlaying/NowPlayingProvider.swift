@@ -32,42 +32,42 @@ enum NowPlayingProviderStatus: Equatable {
     var title: String {
         switch self {
         case .idle:
-            return "Nothing is playing"
+            return String(localized: "Nothing is playing")
         case .checking(let source):
-            return "Checking \(source)"
+            return String(format: String(localized: "Checking %@"), source)
         case .playing(let source):
             return source
         case .paused(let source):
-            return "\(source) paused"
+            return String(format: String(localized: "%@ paused"), source)
         case .stale(let source):
-            return "\(source) last played"
+            return String(format: String(localized: "%@ last played"), source)
         case .browserDisabled:
-            return "Browser detection is off"
+            return String(localized: "Browser detection is off")
         case .permissionNeeded(let source):
-            return "\(source) needs permission"
+            return String(format: String(localized: "%@ needs permission"), source)
         case .unavailable(let source):
-            return "\(source) unavailable"
+            return String(format: String(localized: "%@ unavailable"), source)
         }
     }
 
     var subtitle: String {
         switch self {
         case .idle:
-            return "Start playback to pin controls here."
+            return String(localized: "Start playback to pin controls here.")
         case .checking:
-            return "Looking for active media."
+            return String(localized: "Looking for active media.")
         case .playing:
-            return "Playback controls are ready."
+            return String(localized: "Playback controls are ready.")
         case .paused:
-            return "Resume playback when you are ready."
+            return String(localized: "Resume playback when you are ready.")
         case .stale:
-            return "The last known track is kept here briefly."
+            return String(localized: "The last known track is kept here briefly.")
         case .browserDisabled:
-            return "Enable browser media detection for Chrome playback."
+            return String(localized: "Enable browser media detection for Chrome playback.")
         case .permissionNeeded:
-            return "Allow automation access and browser JavaScript from Apple Events."
+            return String(localized: "Allow automation access and browser JavaScript from Apple Events.")
         case .unavailable:
-            return "Open the app and start playback, then try again."
+            return String(localized: "Open the app and start playback, then try again.")
         }
     }
 }

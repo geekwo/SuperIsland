@@ -70,7 +70,7 @@ final class BatteryManager: ObservableObject {
 
         historyRefreshToken = ModuleRefreshScheduler.shared.register(
             id: "battery.history",
-            name: "Battery history sample",
+            name: String(localized: "Battery history sample"),
             module: .builtIn(.battery),
             policy: .interval(historySampleInterval, tolerance: 60),
             enabled: { AppState.shared.batteryEnabled }
@@ -80,7 +80,7 @@ final class BatteryManager: ObservableObject {
 
         consumerRefreshToken = ModuleRefreshScheduler.shared.register(
             id: "battery.consumers",
-            name: "Battery consumer scan",
+            name: String(localized: "Battery consumer scan"),
             module: .builtIn(.battery),
             policy: .visibleOnly(180, tolerance: 45),
             enabled: { AppState.shared.batteryEnabled }

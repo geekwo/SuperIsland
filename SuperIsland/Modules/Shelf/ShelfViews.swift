@@ -51,7 +51,7 @@ struct ShelfExpandedView: View {
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.white)
 
-                Text(shelf.items.isEmpty ? "Drop files, links, images, or text" : "\(shelf.items.count) saved")
+                Text(shelf.items.isEmpty ? String(localized: "Drop files, links, images, or text") : savedCountLabel)
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(.white.opacity(0.58))
             }
@@ -87,6 +87,13 @@ struct ShelfExpandedView: View {
 
     private var previewItems: [ShelfItem] {
         Array(shelf.items.sorted { $0.addedAt > $1.addedAt }.prefix(4))
+    }
+
+    private var savedCountLabel: String {
+        if shelf.items.count == 1 {
+            return String(localized: "1 saved")
+        }
+        return String(format: String(localized: "%d saved"), shelf.items.count)
     }
 }
 
@@ -226,7 +233,7 @@ private struct TrayDropPane: View {
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(.white.opacity(0.72))
 
-                        Text(totalCount == 1 ? "1 item" : "\(totalCount) items")
+                        Text(itemCountLabel)
                             .font(.system(size: 10, weight: .medium))
                             .foregroundStyle(.white.opacity(0.42))
 
@@ -319,6 +326,13 @@ private struct TrayDropPane: View {
         } else {
             proxy.scrollTo(lastID, anchor: .leading)
         }
+    }
+
+    private var itemCountLabel: String {
+        if totalCount == 1 {
+            return String(localized: "1 item")
+        }
+        return String(format: String(localized: "%d items"), totalCount)
     }
 }
 
@@ -530,9 +544,9 @@ private struct ShelfItemActionsMenu: View {
 
     private var copyTitle: String {
         switch item.kind {
-        case .link: return "Copy Link"
-        case .text: return "Copy Text"
-        default: return "Copy Item"
+        case .link: return String(localized: "Copy Link")
+        case .text: return String(localized: "Copy Text")
+        default: return String(localized: "Copy Item")
         }
     }
 }

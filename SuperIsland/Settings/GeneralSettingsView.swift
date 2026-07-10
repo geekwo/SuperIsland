@@ -311,8 +311,8 @@ struct GeneralSettingsView: View {
                 .frame(width: 18, alignment: .center)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.system(size: 13))
-                Text(description).font(.system(size: 11)).foregroundColor(.secondary)
+                Text(localizedString(title)).font(.system(size: 13))
+                Text(localizedString(description)).font(.system(size: 11)).foregroundColor(.secondary)
             }
 
             Spacer()

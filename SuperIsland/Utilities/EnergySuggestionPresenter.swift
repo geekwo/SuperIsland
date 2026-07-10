@@ -7,9 +7,9 @@ enum EnergySuggestionReason {
     var message: String {
         switch self {
         case .battery:
-            return "Your Mac switched to battery power. SuperIsland can reduce background refresh and pause inactive extension work until you switch back."
+            return String(localized: "Your Mac switched to battery power. SuperIsland can reduce background refresh and pause inactive extension work until you switch back.")
         case .sustainedActivity:
-            return "SuperIsland has been doing sustained background refresh work. Low Power mode can slow non-essential refresh until you need it again."
+            return String(localized: "SuperIsland has been doing sustained background refresh work. Low Power mode can slow non-essential refresh until you need it again.")
         }
     }
 }
@@ -40,12 +40,12 @@ final class EnergySuggestionPresenter {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             let alert = NSAlert()
-            alert.messageText = "Use Low Power mode?"
+            alert.messageText = String(localized: "Use Low Power mode?")
             alert.informativeText = reason.message
             alert.alertStyle = .informational
-            alert.addButton(withTitle: "Enable Low Power")
-            alert.addButton(withTitle: "Not Now")
-            alert.addButton(withTitle: "Do Not Ask Again")
+            alert.addButton(withTitle: String(localized: "Enable Low Power"))
+            alert.addButton(withTitle: String(localized: "Not Now"))
+            alert.addButton(withTitle: String(localized: "Do Not Ask Again"))
 
             let response = alert.runModal()
             switch response {

@@ -265,7 +265,7 @@ final class CalendarManager: ObservableObject {
 
         refreshToken = ModuleRefreshScheduler.shared.register(
             id: "calendar.refresh",
-            name: "Calendar fallback refresh",
+            name: String(localized: "Calendar fallback refresh"),
             module: .builtIn(.calendar),
             policy: .interval(600, tolerance: 120),
             enabled: { AppState.shared.calendarEnabled }

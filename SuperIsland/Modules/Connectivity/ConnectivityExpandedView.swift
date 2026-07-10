@@ -61,7 +61,7 @@ struct ConnectivityExpandedView: View {
                 status: "Connected",
                 statusColor: .green,
                 title: device.name,
-                detail: device.batteryLevel.map { "Battery \($0)%" }
+                detail: device.batteryLevel.map { String(format: String(localized: "Battery %d%%"), $0) }
             )
         } else if let disconnectedName = bluetooth.lastDisconnectedDeviceName {
             statusRow(
@@ -69,7 +69,7 @@ struct ConnectivityExpandedView: View {
                 status: "Disconnected",
                 statusColor: .red,
                 title: disconnectedName,
-                detail: "Bluetooth device"
+                detail: String(localized: "Bluetooth device")
             )
         } else if wifi.isConnected, let ssid = wifi.ssid {
             statusRow(
@@ -84,10 +84,17 @@ struct ConnectivityExpandedView: View {
                 icon: "wifi.slash",
                 status: "Offline",
                 statusColor: .white.opacity(0.45),
-                title: "No active connection",
-                detail: bluetooth.connectedDevices.isEmpty ? "Wi-Fi and Bluetooth are idle" : "\(bluetooth.connectedDevices.count) Bluetooth device\(bluetooth.connectedDevices.count == 1 ? "" : "s") connected"
+                title: String(localized: "No active connection"),
+                detail: bluetooth.connectedDevices.isEmpty ? String(localized: "Wi-Fi and Bluetooth are idle") : bluetoothDeviceCountLabel
             )
         }
+    }
+
+    private var bluetoothDeviceCountLabel: String {
+        if bluetooth.connectedDevices.count == 1 {
+            return String(localized: "1 Bluetooth device connected")
+        }
+        return String(format: String(localized: "%d Bluetooth devices connected"), bluetooth.connectedDevices.count)
     }
 
     private func statusRow(
@@ -104,7 +111,7 @@ struct ConnectivityExpandedView: View {
                 .frame(width: 32)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(status)
+                Text(localizedString(status))
                     .font(.system(size: 10))
                     .foregroundColor(statusColor)
 

@@ -140,7 +140,7 @@ final class NowPlayingManager: ObservableObject {
     private func startPolling() {
         sourceRefreshToken = ModuleRefreshScheduler.shared.register(
             id: "nowPlaying.source",
-            name: "Now Playing fallback refresh",
+            name: String(localized: "Now Playing fallback refresh"),
             module: .builtIn(.nowPlaying),
             policy: .interval(5, tolerance: 2),
             enabled: { AppState.shared.nowPlayingEnabled }
@@ -1128,7 +1128,7 @@ final class NowPlayingManager: ObservableObject {
         lastPlaybackTickDate = Date()
         playbackRefreshToken = ModuleRefreshScheduler.shared.register(
             id: "nowPlaying.progress",
-            name: "Now Playing progress",
+            name: String(localized: "Now Playing progress"),
             module: .builtIn(.nowPlaying),
             policy: .visibleOnly(1, tolerance: 0.2),
             enabled: { [weak self] in

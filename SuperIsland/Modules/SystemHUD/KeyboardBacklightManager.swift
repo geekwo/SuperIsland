@@ -66,7 +66,7 @@ final class KeyboardBacklightManager: ObservableObject {
         Task { @MainActor [weak self] in
             self?.refreshToken = ModuleRefreshScheduler.shared.register(
                 id: "volume.keyboardBacklight",
-                name: "Keyboard backlight refresh",
+                name: String(localized: "Keyboard backlight refresh"),
                 module: .builtIn(.volumeHUD),
                 policy: .visibleOnly(2, tolerance: 0.5),
                 enabled: { AppState.shared.volumeHUDEnabled }

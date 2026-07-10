@@ -88,13 +88,13 @@ struct WeatherExpandedView: View {
     private var weatherDetailsGrid: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 16) {
-                weatherDetailCell(icon: "thermometer.medium", title: "Feels Like", value: temp(manager.weather.feelsLike))
-                weatherDetailCell(icon: "humidity.fill", title: "Humidity", value: "\(manager.weather.humidity)%")
+                weatherDetailCell(icon: "thermometer.medium", title: String(localized: "Feels Like"), value: temp(manager.weather.feelsLike))
+                weatherDetailCell(icon: "humidity.fill", title: String(localized: "Humidity"), value: "\(manager.weather.humidity)%")
                 weatherDetailCell(icon: "aqi.medium", title: "AQI", value: aqiLabel)
             }
             HStack(spacing: 16) {
-                weatherDetailCell(icon: "wind", title: "Wind", value: "\(Int(manager.weather.windSpeed)) mph")
-                weatherDetailCell(icon: "sun.max.trianglebadge.exclamationmark.fill", title: "UV Index", value: uvLabel)
+                weatherDetailCell(icon: "wind", title: String(localized: "Wind"), value: String(format: String(localized: "%d mph"), Int(manager.weather.windSpeed)))
+                weatherDetailCell(icon: "sun.max.trianglebadge.exclamationmark.fill", title: String(localized: "UV Index"), value: uvLabel)
                 Spacer()
             }
         }
@@ -122,11 +122,11 @@ struct WeatherExpandedView: View {
         let uv = manager.weather.uvIndex
         let level: String
         switch uv {
-        case ..<3: level = "Low"
-        case ..<6: level = "Mod"
-        case ..<8: level = "High"
-        case ..<11: level = "Very High"
-        default: level = "Extreme"
+        case ..<3: level = String(localized: "Low")
+        case ..<6: level = String(localized: "Mod")
+        case ..<8: level = String(localized: "High")
+        case ..<11: level = String(localized: "Very High")
+        default: level = String(localized: "Extreme")
         }
         return "\(Int(uv)) \(level)"
     }
@@ -136,12 +136,12 @@ struct WeatherExpandedView: View {
         if aqi == 0 { return "—" }
         let level: String
         switch aqi {
-        case ..<51: level = "Good"
-        case ..<101: level = "Moderate"
-        case ..<151: level = "Unhealthy*"
-        case ..<201: level = "Unhealthy"
-        case ..<301: level = "Very Poor"
-        default: level = "Hazardous"
+        case ..<51: level = String(localized: "Good")
+        case ..<101: level = String(localized: "Moderate")
+        case ..<151: level = String(localized: "Unhealthy*")
+        case ..<201: level = String(localized: "Unhealthy")
+        case ..<301: level = String(localized: "Very Poor")
+        default: level = String(localized: "Hazardous")
         }
         return "\(aqi) \(level)"
     }

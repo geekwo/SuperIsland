@@ -33,7 +33,7 @@ final class WiFiManager: ObservableObject {
         Task { @MainActor [weak self] in
             self?.refreshToken = ModuleRefreshScheduler.shared.register(
                 id: "connectivity.wifi",
-                name: "Wi-Fi fallback refresh",
+                name: String(localized: "Wi-Fi fallback refresh"),
                 module: .builtIn(.connectivity),
                 policy: .visibleOnly(30, tolerance: 10),
                 enabled: { AppState.shared.connectivityEnabled }

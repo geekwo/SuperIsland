@@ -121,7 +121,7 @@ struct SystemHUDExpandedView: View {
 
     private var label: String {
         switch appState.activeBuiltInModule {
-        case .volumeHUD: return "Volume"
+        case .volumeHUD: return String(localized: "Volume")
         default: return ""
         }
     }

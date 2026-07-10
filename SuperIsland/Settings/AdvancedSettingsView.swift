@@ -176,16 +176,16 @@ struct AdvancedSettingsView: View {
             }
             Spacer(minLength: 12)
             VStack(alignment: .trailing, spacing: 3) {
-                Text(job.status)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(job.status == "Scheduled" ? .green : .secondary)
+                    Text(job.status)
+                        .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(job.status == String(localized: "Scheduled") ? .green : .secondary)
                 if let duration = job.lastRunDuration {
                     Text("\(String(format: "%.0f", duration * 1000)) ms")
                         .font(.system(size: 11, design: .monospaced))
                         .foregroundColor(.secondary)
                 }
                 if let nextFireDate = job.nextFireDate {
-                    Text("Next \(nextFireDate, style: .relative)")
+                    (Text(String(localized: "Next")) + Text(" ") + Text(nextFireDate, style: .relative))
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
                 }

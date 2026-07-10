@@ -32,7 +32,7 @@ struct CalendarExpandedView: View {
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.white)
                 Spacer()
-                Text("\(manager.todayEvents.count) events")
+                Text(todayEventCountLabel)
                     .font(.system(size: 11))
                     .foregroundColor(.white.opacity(0.5))
             }
@@ -247,7 +247,7 @@ struct CalendarExpandedView: View {
                         .fill(Color(cgColor: event.calendar.cgColor))
                         .frame(width: 2, height: 14)
 
-                    Text(event.title ?? "Untitled")
+                    Text(event.title ?? String(localized: "Untitled"))
                         .font(.system(size: 11, weight: .medium))
                         .foregroundColor(.white.opacity(0.78))
                         .lineLimit(1)
@@ -277,7 +277,7 @@ struct CalendarExpandedView: View {
 
     private func upcomingDayLabel(for date: Date) -> String {
         if calendar.isDateInTomorrow(date) {
-            return "Tomorrow"
+            return String(localized: "Tomorrow")
         }
         return Self.upcomingDayFormatter.string(from: date)
     }
@@ -290,7 +290,7 @@ struct CalendarExpandedView: View {
                 .padding(.top, 4)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(event.title ?? "Untitled")
+                Text(event.title ?? String(localized: "Untitled"))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.white.opacity(0.88))
                     .lineLimit(1)
@@ -349,6 +349,13 @@ struct CalendarExpandedView: View {
     private func isEventActive(_ event: EKEvent) -> Bool {
         let now = Date()
         return !event.isAllDay && event.startDate <= now && event.endDate > now
+    }
+
+    private var todayEventCountLabel: String {
+        if manager.todayEvents.count == 1 {
+            return String(localized: "1 event")
+        }
+        return String(format: String(localized: "%d events"), manager.todayEvents.count)
     }
 
     private func eventActionIcon(_ name: String) -> some View {
