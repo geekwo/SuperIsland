@@ -155,27 +155,27 @@ struct IslandContainerView: View {
     // captured by the panel's hit test and blocks clicks from reaching apps
     // underneath (see issue #1).
     private var ambientShadowOpacity: Double {
-        appState.currentState == .compact ? 0.0 : 0.38
+        appState.currentState == .compact ? 0.0 : 0.24
     }
 
     private var ambientShadowRadius: CGFloat {
-        appState.currentState == .compact ? 0 : 8
+        appState.currentState == .compact ? 0 : 10
     }
 
     private var ambientShadowYOffset: CGFloat {
-        appState.currentState == .compact ? 0 : 6
+        appState.currentState == .compact ? 0 : 3
     }
 
     private var keyShadowOpacity: Double {
-        appState.currentState == .compact ? 0.0 : 0.58
+        appState.currentState == .compact ? 0.0 : 0.26
     }
 
     private var keyShadowRadius: CGFloat {
-        appState.currentState == .compact ? 0 : 14
+        appState.currentState == .compact ? 0 : 18
     }
 
     private var keyShadowYOffset: CGFloat {
-        appState.currentState == .compact ? 0 : 10
+        appState.currentState == .compact ? 0 : 5
     }
 
     private var islandSurfaceAnimation: Animation {
