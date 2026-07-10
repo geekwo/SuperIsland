@@ -324,7 +324,7 @@ struct IslandContainerView: View {
     // MARK: - Module Cycler
 
     private var showModuleCycler: Bool {
-        appState.currentState != .compact && enabledModuleCount > 1
+        false
     }
 
     private var enabledModuleCount: Int {
