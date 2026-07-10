@@ -892,20 +892,21 @@ final class AppState: ObservableObject {
     func selectFullExpandedTab(_ tab: FullExpandedTab) {
         withAnimation(contentSwapAnimation) {
             fullExpandedSelectedTab = tab
+            switch tab {
+            case .home:
+                previousModule = activeModule
+                activeModule = nil
+            case .module(let module):
+                previousModule = activeModule
+                activeModule = module
+            }
         }
 
         updateShelfDefaultSelection(for: tab)
-
-        if case .module(let module) = tab {
-            setActiveModule(module)
-        }
     }
 
     func showHomeTab() {
-        withAnimation(contentSwapAnimation) {
-            fullExpandedSelectedTab = .home
-        }
-        shelfDefaultToShelf = false
+        selectFullExpandedTab(.home)
     }
 
     // MARK: - Module Status
@@ -1374,7 +1375,11 @@ final class AppState: ObservableObject {
             fullExpandedSelectedTab = nextTab
         }
 
-        if case .module(let module) = nextTab {
+        switch nextTab {
+        case .home:
+            previousModule = activeModule
+            activeModule = nil
+        case .module(let module):
             previousModule = activeModule
             activeModule = module
         }
@@ -1393,7 +1398,11 @@ final class AppState: ObservableObject {
 
         withAnimation(contentSwapAnimation) {
             fullExpandedSelectedTab = nextTab
-            if case .module(let module) = nextTab {
+            switch nextTab {
+            case .home:
+                previousModule = activeModule
+                activeModule = nil
+            case .module(let module):
                 previousModule = activeModule
                 activeModule = module
             }

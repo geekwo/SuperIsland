@@ -35,6 +35,10 @@ function percentLabel(value) {
 }
 
 function sourceLabel(source) {
+  if (typeof source === "string" && source.endsWith("-stale")) {
+    const base = sourceLabel(source.replace(/-stale$/, ""));
+    return base ? `${base} · stale` : "Stale data";
+  }
   switch (source) {
     case "oauth-api":
       return "OAuth API";
@@ -55,6 +59,11 @@ function withSource(detail, source) {
   const sourceText = sourceLabel(source);
   if (!sourceText) return detail;
   return detail ? `${detail} | ${sourceText}` : sourceText;
+}
+
+function freshnessDetail(detail, payload) {
+  if (!payload || payload.stale !== true) return detail;
+  return detail ? `${detail} · data may be stale` : "Data may be stale";
 }
 
 function pickCodexWindow(codex) {
@@ -123,7 +132,7 @@ function codexModel(usage) {
       color: "gray",
       weeklyRemaining: null,
       sessionRemaining: null,
-      detail: withSource("Not available", source)
+      detail: withSource(freshnessDetail("Not available", codex), source)
     };
   }
 
@@ -136,7 +145,7 @@ function codexModel(usage) {
       color: "green",
       weeklyRemaining: 100,
       sessionRemaining: 100,
-      detail: withSource("Unlimited", source)
+      detail: withSource(freshnessDetail("Unlimited", codex), source)
     };
   }
 
@@ -153,7 +162,7 @@ function codexModel(usage) {
       color: "gray",
       weeklyRemaining: usageStats.weeklyRemaining,
       sessionRemaining: usageStats.sessionRemaining,
-      detail: withSource("No window data", source)
+      detail: withSource(freshnessDetail("No window data", codex), source)
     };
   }
 
@@ -165,7 +174,7 @@ function codexModel(usage) {
     color: colorForRemaining(remaining),
     weeklyRemaining: usageStats.weeklyRemaining,
     sessionRemaining: usageStats.sessionRemaining,
-    detail: withSource(window && window.windowLabel ? window.windowLabel : "Usage window", source)
+    detail: withSource(freshnessDetail(window && window.windowLabel ? window.windowLabel : "Usage window", codex), source)
   };
 }
 
@@ -181,7 +190,7 @@ function claudeModel(usage) {
       color: "gray",
       weeklyRemaining: null,
       sessionRemaining: null,
-      detail: withSource("Not available", source)
+      detail: withSource(freshnessDetail("Not available", claude), source)
     };
   }
 
@@ -241,7 +250,7 @@ function claudeModel(usage) {
     color: colorForRemaining(remaining),
     weeklyRemaining: explicitWeeklyRemaining !== null ? Math.round(clamp(explicitWeeklyRemaining, 0, 100)) : null,
     sessionRemaining: explicitSessionRemaining !== null ? Math.round(clamp(explicitSessionRemaining, 0, 100)) : null,
-    detail: withSource(detail, source)
+    detail: withSource(freshnessDetail(detail, claude), source)
   };
 }
 

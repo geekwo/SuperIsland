@@ -74,12 +74,11 @@ var OFFLINE_GLYPH = { 2:1, 7:1, 12:1, 22:1 };
 function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
 function withAlpha(c, a) { return { r: c.r, g: c.g, b: c.b, a: clamp01(a) }; }
 
-function computeAlphas(state, t, online) {
+function computeAlphas(state, online) {
   var out = new Array(25);
   var i;
   if (!online) {
-    var blink = Math.sin(t / 450) > 0;
-    for (i = 0; i < 25; i++) out[i] = OFFLINE_GLYPH[i] ? (blink ? 1.0 : 0.35) : 0;
+    for (i = 0; i < 25; i++) out[i] = OFFLINE_GLYPH[i] ? 0.85 : 0;
     return out;
   }
   if (state === "Working") {
@@ -87,21 +86,16 @@ function computeAlphas(state, t, online) {
       var x = i % W, y = (i / W) | 0;
       var dx = x - 2, dy = y - 2;
       var d = Math.sqrt(dx * dx + dy * dy);
-      var v = Math.sin(t / 400 - d * 1.2) * 0.5 + 0.5;
-      out[i] = v > 0.3 ? (v * 0.9 + 0.1) : 0;
+      out[i] = d <= 2.25 ? (1 - d * 0.18) : 0;
     }
   } else if (state === "Waiting") {
-    var b = Math.sin(t / 500) > 0;
-    for (i = 0; i < 25; i++) out[i] = QMARK[i] ? (b ? 1.0 : 0.3) : 0;
+    for (i = 0; i < 25; i++) out[i] = QMARK[i] ? 1.0 : 0;
   } else if (state === "Idle") {
-    var on = (t % 1060) < 600;
-    for (i = 0; i < 25; i++) out[i] = CURSOR[i] ? (on ? 0.9 : 0) : 0;
+    for (i = 0; i < 25; i++) out[i] = CURSOR[i] ? 0.85 : 0;
   } else if (state === "Error") {
-    var pulse = Math.sin(t / 300) * 0.25 + 0.75;
-    for (i = 0; i < 25; i++) out[i] = XPAT[i] ? pulse : 0;
+    for (i = 0; i < 25; i++) out[i] = XPAT[i] ? 1.0 : 0;
   } else if (state === "Done") {
-    var glow = Math.sin(t / 360) * 0.15 + 0.85;
-    for (i = 0; i < 25; i++) out[i] = CHECK[i] ? glow : 0;
+    for (i = 0; i < 25; i++) out[i] = CHECK[i] ? 0.95 : 0;
   } else {
     for (i = 0; i < 25; i++) out[i] = 0;
   }
@@ -116,8 +110,7 @@ function cell(pixelSize, color, radius) {
 }
 
 function pixelGrid(state, online, pixelSize, gap) {
-  var t = Date.now();
-  var alphas = computeAlphas(state, t, online);
+  var alphas = computeAlphas(state, online);
   var base = online ? (COLORS[state] || COLORS.Idle) : (activationFailed ? { r: 0.98, g: 0.42, b: 0.42, a: 1 } : OFFLINE);
   var radius = Math.max(1, pixelSize * 0.18);
   var rows = [];
@@ -146,6 +139,19 @@ function pixelBox(state, online, outerSize) {
     ),
     Math.max(4, outerSize * 0.18)
   );
+}
+
+function statusDot(state, online, outerSize) {
+  var size = Math.max(8, Math.floor(outerSize * 0.42));
+  var color = stateAccent(state, online);
+  var dot = View.cornerRadius(
+    View.background(
+      View.frame(View.text("", { style: "caption", color: "white" }), { width: size, height: size }),
+      color
+    ),
+    size / 2
+  );
+  return View.frame(dot, { width: outerSize, height: outerSize, alignment: "center" });
 }
 
 // --- Formatting helpers --------------------------------------------------
@@ -790,7 +796,10 @@ SuperIsland.registerModule({
   // -- minimalCompact (notched Macs) --
   minimalCompact: {
     leading: function () {
-      return View.frame(pixelBox(currentState, bridgeOnline, 24), { width: 24, height: 24, alignment: "center" });
+      // Keep the notched compact slot live, but avoid the animated 5x5 grid
+      // here: the host samples this view frequently and publishes it into the
+      // whole island tree. The detailed 5x5 status glyph stays in expanded modes.
+      return statusDot(currentState, bridgeOnline, 24);
     },
     trailing: function () {
       if (!bridgeOnline) {

@@ -144,11 +144,12 @@ struct FullExpandedTopBarView: View {
                     }
                     .padding(.horizontal, 2)
                     .padding(.bottom, 10)
+                    .transaction { transaction in
+                        transaction.animation = nil
+                    }
                 }
                 .onChange(of: appState.fullExpandedSelectedTab) { _, newTab in
-                    withAnimation(.easeInOut(duration: 0.22)) {
-                        proxy.scrollTo(newTab.id, anchor: .leading)
-                    }
+                    proxy.scrollTo(newTab.id, anchor: .leading)
                 }
                 .onChange(of: appState.currentState) { _, newState in
                     if newState == .fullExpanded {
@@ -193,7 +194,7 @@ struct FullExpandedTopBarView: View {
 
             ScrollViewReader { proxy in
                 ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: shoulderTabSpacing) {
+                    HStack(spacing: shoulderTabSpacing) {
                         ForEach(moduleTabs) { tab in
                             FullExpandedTabButton(
                                 tab: tab,
@@ -207,18 +208,21 @@ struct FullExpandedTopBarView: View {
                         }
                     }
                     .padding(.horizontal, 2)
+                    .transaction { transaction in
+                        transaction.animation = nil
+                    }
                 }
                 .frame(width: shoulderModuleViewportWidth, alignment: .leading)
                 .clipped()
                 .onAppear {
-                    scrollShoulderTabs(with: proxy, animated: false)
+                    scrollShoulderTabs(with: proxy)
                 }
                 .onChange(of: appState.fullExpandedSelectedTab) { _, _ in
-                    scrollShoulderTabs(with: proxy, animated: true)
+                    scrollShoulderTabs(with: proxy)
                 }
                 .onChange(of: appState.currentState) { _, newState in
                     if newState == .fullExpanded {
-                        scrollShoulderTabs(with: proxy, animated: false)
+                        scrollShoulderTabs(with: proxy)
                     }
                 }
             }
@@ -433,19 +437,13 @@ struct FullExpandedTopBarView: View {
         return "\(count)"
     } 
 
-    private func scrollShoulderTabs(with proxy: ScrollViewProxy, animated: Bool) {
+    private func scrollShoulderTabs(with proxy: ScrollViewProxy) {
         guard case .module(let module) = appState.fullExpandedSelectedTab else { return }
         let targetTab = FullExpandedTab.module(module)
         guard moduleTabs.contains(targetTab) else { return }
         let target = targetTab.id
 
-        if animated {
-            withAnimation(.easeInOut(duration: 0.22)) {
-                proxy.scrollTo(target, anchor: .leading)
-            }
-        } else {
-            proxy.scrollTo(target, anchor: .leading)
-        }
+        proxy.scrollTo(target, anchor: .leading)
     }
 
     private func batteryButtonTint(isSelected: Bool) -> Color {
@@ -511,15 +509,38 @@ private struct FullExpandedTabButton: View {
 
     @ViewBuilder
     private var tabIcon: some View {
-        if let iconImage = tab.iconImage {
-            Image(nsImage: iconImage)
-                .renderingMode(.original)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 11, height: 11)
-        } else {
-            Image(systemName: tab.iconName)
-                .font(.system(size: 11, weight: .semibold))
+        FullExpandedTabIcon(tab: tab)
+    }
+}
+
+private struct FullExpandedTabIcon: View {
+    let tab: FullExpandedTab
+    @State private var iconImage: NSImage?
+
+    var body: some View {
+        Group {
+            if let iconImage {
+                Image(nsImage: iconImage)
+                    .renderingMode(.original)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 11, height: 11)
+            } else {
+                Image(systemName: tab.iconName)
+                    .font(.system(size: 11, weight: .semibold))
+            }
         }
+        .onAppear {
+            loadIconIfNeeded()
+        }
+        .onChange(of: tab.id) { _, _ in
+            iconImage = nil
+            loadIconIfNeeded()
+        }
+    }
+
+    private func loadIconIfNeeded() {
+        guard iconImage == nil else { return }
+        iconImage = tab.iconImage
     }
 }

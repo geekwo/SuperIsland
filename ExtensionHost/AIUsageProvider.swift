@@ -12,6 +12,8 @@ enum AIUsageProvider {
     private static let claudeKeychainAccessRetryInterval: TimeInterval = 24 * 60 * 60
     private static var cachedSnapshot: [String: Any]?
     private static var cachedAt: Date?
+    private static var lastGoodCodexPayload: [String: Any]?
+    private static var lastGoodClaudePayload: [String: Any]?
     private static let cacheLock = NSLock()
     private static var isRefreshing = false
 
@@ -62,18 +64,65 @@ enum AIUsageProvider {
         DispatchQueue.global(qos: .utility).async {
             let nowDate = Date()
             let now = Int(nowDate.timeIntervalSince1970)
-            let payload: [String: Any] = [
-                "updatedAt": now,
-                "codex": buildCodexPayload(updatedAt: now),
-                "claude": buildClaudePayload(updatedAt: now)
-            ]
+            let codexPayload = buildCodexPayload(updatedAt: now)
+            let claudePayload = buildClaudePayload(updatedAt: now)
+
+            let resolvedCodexPayload: [String: Any]
+            let resolvedClaudePayload: [String: Any]
 
             cacheLock.lock()
+            if isUsableCodexPayload(codexPayload) {
+                lastGoodCodexPayload = codexPayload
+                resolvedCodexPayload = codexPayload
+            } else if let lastGoodCodexPayload {
+                resolvedCodexPayload = markStale(lastGoodCodexPayload, checkedAt: now)
+            } else {
+                resolvedCodexPayload = codexPayload
+            }
+
+            if isUsableClaudePayload(claudePayload) {
+                lastGoodClaudePayload = claudePayload
+                resolvedClaudePayload = claudePayload
+            } else if let lastGoodClaudePayload {
+                resolvedClaudePayload = markStale(lastGoodClaudePayload, checkedAt: now)
+            } else {
+                resolvedClaudePayload = claudePayload
+            }
+
+            let payload: [String: Any] = [
+                "updatedAt": now,
+                "codex": resolvedCodexPayload,
+                "claude": resolvedClaudePayload
+            ]
             cachedAt = nowDate
             cachedSnapshot = payload
             isRefreshing = false
             cacheLock.unlock()
         }
+    }
+
+    private static func isUsableCodexPayload(_ payload: [String: Any]) -> Bool {
+        guard payload["available"] as? Bool == true else { return false }
+        if payload["unlimited"] as? Bool == true { return true }
+        return payload["primary"] is [String: Any] || payload["secondary"] is [String: Any]
+    }
+
+    private static func isUsableClaudePayload(_ payload: [String: Any]) -> Bool {
+        guard payload["available"] as? Bool == true else { return false }
+        return asDoubleOrNil(payload["remainingPercent"]) != nil
+            || asDoubleOrNil(payload["weeklyRemainingPercent"]) != nil
+            || asDoubleOrNil(payload["currentSessionRemainingPercent"]) != nil
+            || asDoubleOrNil(payload["hoursTillReset"]) != nil
+    }
+
+    private static func markStale(_ payload: [String: Any], checkedAt: Int) -> [String: Any] {
+        var stalePayload = payload
+        stalePayload["stale"] = true
+        stalePayload["lastCheckedAt"] = checkedAt
+        if let source = stalePayload["source"] as? String, !source.hasSuffix("-stale") {
+            stalePayload["source"] = "\(source)-stale"
+        }
+        return stalePayload
     }
 
     // MARK: - Codex

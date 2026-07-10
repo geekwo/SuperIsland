@@ -278,6 +278,7 @@ final class ExtensionManager: ObservableObject {
     func refreshState(extensionID: String) {
         guard let runtime = runtimes[extensionID] else { return }
         if let state = runtime.fetchState() {
+            guard extensionStates[extensionID] != state else { return }
             extensionStates[extensionID] = state
         }
     }

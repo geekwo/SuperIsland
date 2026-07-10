@@ -1,7 +1,7 @@
 import SwiftUI
 import JavaScriptCore
 
-struct ExtensionViewState {
+struct ExtensionViewState: Equatable {
     var compact: ViewNode
     var expanded: ViewNode
     var fullExpanded: ViewNode?
