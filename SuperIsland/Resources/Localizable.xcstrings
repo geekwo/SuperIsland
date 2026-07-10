@@ -3602,6 +3602,23 @@
         }
       }
     },
+    "manual" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "manual"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手动"
+          }
+        }
+      }
+    },
     "Manual" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3883,6 +3900,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "需要更多样本"
+          }
+        }
+      }
+    },
+    "network" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "network"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "网络"
           }
         }
       }
@@ -4283,6 +4317,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "来自发布公共分布式通知的 App 的类通知事件。"
+          }
+        }
+      }
+    },
+    "notifications" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知"
           }
         }
       }
@@ -5987,6 +6038,23 @@
         }
       }
     },
+    "storage" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "storage"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "存储"
+          }
+        }
+      }
+    },
     "Strong" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6301,6 +6369,23 @@
         }
       }
     },
+    "timer" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "timer"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "定时"
+          }
+        }
+      }
+    },
     "Timer" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6504,9 +6589,6 @@
           }
         }
       }
-    },
-    "Unsupported setting field: %@" : {
-
     },
     "Untitled" : {
       "extractionState" : "stale",

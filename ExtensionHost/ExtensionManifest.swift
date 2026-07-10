@@ -188,6 +188,16 @@ struct ExtensionManifest: Codable, Identifiable, Hashable {
 
 extension ExtensionManifest {
     @MainActor
+    var localizedName: String {
+        ExtensionLocalization.localized(name, manifest: self)
+    }
+
+    @MainActor
+    var localizedDescription: String {
+        ExtensionLocalization.localized(description, manifest: self)
+    }
+
+    @MainActor
     var iconImage: NSImage? {
         guard let iconURL else { return nil }
 

@@ -333,7 +333,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if !extensionModules.isEmpty {
             modulesMenu.addItem(.separator())
             for manifest in extensionModules {
-                let extensionItem = NSMenuItem(title: manifest.name, action: #selector(toggleExtension(_:)), keyEquivalent: "")
+                let extensionItem = NSMenuItem(title: manifest.localizedName, action: #selector(toggleExtension(_:)), keyEquivalent: "")
                 extensionItem.target = self
                 extensionItem.representedObject = manifest.id
                 extensionItem.state = ExtensionManager.shared.runtimes[manifest.id] != nil ? .on : .off

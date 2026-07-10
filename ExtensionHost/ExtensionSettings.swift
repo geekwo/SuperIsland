@@ -253,7 +253,7 @@ struct ExtensionSettingsRenderer: View {
         VStack(alignment: .leading, spacing: 12) {
             ForEach(schema.sections) { section in
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(localizedString(section.title))
+                    Text(ExtensionLocalization.localized(localizedString(section.title), extensionID: extensionID))
                         .font(.subheadline.weight(.semibold))
 
                     ForEach(section.fields) { field in
@@ -269,29 +269,29 @@ struct ExtensionSettingsRenderer: View {
     private func fieldView(_ field: SettingsField) -> some View {
         switch field.type.lowercased() {
         case "toggle":
-            Toggle(localizedString(field.label), isOn: boolBinding(for: field))
+            Toggle(localizedFieldLabel(field), isOn: boolBinding(for: field))
 
         case "slider":
             ExtensionSliderSettingsField(extensionID: extensionID, field: field)
 
         case "stepper":
             Stepper(
-                "\(localizedString(field.label)): \(Int(doubleBinding(for: field).wrappedValue))",
+                "\(localizedFieldLabel(field)): \(Int(doubleBinding(for: field).wrappedValue))",
                 value: doubleBinding(for: field),
                 in: (field.min ?? 0)...(field.max ?? 100),
                 step: field.step ?? 1
             )
 
         case "picker":
-            Picker(localizedString(field.label), selection: stringBinding(for: field)) {
+            Picker(localizedFieldLabel(field), selection: stringBinding(for: field)) {
                 ForEach(field.options ?? []) { option in
-                    Text(localizedString(option.label)).tag(option.value)
+                    Text(ExtensionLocalization.localized(localizedString(option.label), extensionID: extensionID)).tag(option.value)
                 }
             }
             .pickerStyle(.menu)
 
         case "button":
-            Button(localizedString(field.label)) {
+            Button(localizedFieldLabel(field)) {
                 let actionID = field.action.flatMap { $0.isEmpty ? nil : $0 } ?? field.key
                 ExtensionManager.shared.handleAction(extensionID: extensionID, actionID: actionID)
             }
@@ -301,16 +301,20 @@ struct ExtensionSettingsRenderer: View {
 
         case "text", "color":
             VStack(alignment: .leading, spacing: 4) {
-                Text(localizedString(field.label))
-                TextField(localizedString(field.label), text: stringBinding(for: field))
+                Text(localizedFieldLabel(field))
+                TextField(localizedFieldLabel(field), text: stringBinding(for: field))
                     .textFieldStyle(.roundedBorder)
             }
 
         default:
-            Text("Unsupported setting field: \(field.type)")
+            Text(String(format: String(localized: "Unsupported setting field: %@"), field.type))
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
+    }
+
+    private func localizedFieldLabel(_ field: SettingsField) -> String {
+        ExtensionLocalization.localized(localizedString(field.label), extensionID: extensionID)
     }
 
     private func boolBinding(for field: SettingsField) -> Binding<Bool> {
@@ -413,7 +417,7 @@ private struct ExtensionSliderSettingsField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(localizedString(field.label))
+                Text(ExtensionLocalization.localized(localizedString(field.label), extensionID: extensionID))
                 Spacer()
                 Text(String(format: "%.0f", value))
                     .font(.caption.monospacedDigit())

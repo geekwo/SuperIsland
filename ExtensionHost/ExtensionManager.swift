@@ -90,6 +90,7 @@ final class ExtensionManager: ObservableObject {
     }
 
     func discoverExtensions() {
+        ExtensionLocalization.resetCache()
         var discovered: [String: ExtensionManifest] = [:]
         var discoveredSchemas: [String: SettingsSchema] = [:]
 
@@ -127,7 +128,7 @@ final class ExtensionManager: ObservableObject {
         }
 
         let manifests = discovered.values.sorted { lhs, rhs in
-            lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+            lhs.localizedName.localizedCaseInsensitiveCompare(rhs.localizedName) == .orderedAscending
         }
         installed = manifests
         settingsSchemas = discoveredSchemas
@@ -450,7 +451,7 @@ final class ExtensionManager: ObservableObject {
 
         refreshTokens[manifest.id] = ModuleRefreshScheduler.shared.register(
             id: "extension.\(manifest.id).refresh",
-            name: String(format: String(localized: "%@ extension refresh"), manifest.name),
+            name: String(format: String(localized: "%@ extension refresh"), manifest.localizedName),
             module: module,
             policy: policy,
             enabled: { [weak self] in

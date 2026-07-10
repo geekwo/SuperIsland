@@ -1025,7 +1025,7 @@ final class ExtensionJSRuntime {
             && AppState.shared.isNotificationSourceEnabled(.extensions)
 
         if manifest.capabilities.notificationFeed, extensionsSourceEnabled {
-            let resolvedAppName = appName ?? manifest.name
+            let resolvedAppName = appName ?? manifest.localizedName
             let resolvedBundleIdentifier = bundleIdentifier ?? extensionID
             let resolvedSenderName = senderName ?? (title.isEmpty ? nil : title)
             let resolvedPreviewText = previewText ?? (body.isEmpty ? nil : body)
@@ -1041,10 +1041,10 @@ final class ExtensionJSRuntime {
                     bundleIdentifier: resolvedBundleIdentifier,
                     appIcon: "app.badge",
                     appIconURL: resolvedAppIconURL,
-                    title: resolvedTitle,
-                    body: resolvedBody,
-                    senderName: resolvedSenderName,
-                    previewText: resolvedPreviewText,
+                    title: ExtensionLocalization.localized(resolvedTitle, manifest: manifest),
+                    body: ExtensionLocalization.localized(resolvedBody, manifest: manifest),
+                    senderName: resolvedSenderName.map { ExtensionLocalization.localized($0, manifest: manifest) },
+                    previewText: resolvedPreviewText.map { ExtensionLocalization.localized($0, manifest: manifest) },
                     avatarURL: avatarURL,
                     timestamp: Date(),
                     tapAction: tapAction

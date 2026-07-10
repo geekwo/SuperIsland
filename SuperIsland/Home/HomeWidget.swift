@@ -41,7 +41,7 @@ enum HomeWidgetSelection: Hashable, Identifiable {
         case .builtIn(let module):
             return module.displayName
         case .extension_(let extensionID):
-            return ExtensionManager.shared.installed.first(where: { $0.id == extensionID })?.name ?? extensionID
+            return ExtensionManager.shared.installed.first(where: { $0.id == extensionID })?.localizedName ?? extensionID
         }
     }
 

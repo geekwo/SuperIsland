@@ -143,10 +143,10 @@ struct ExtensionsSettingsView: View {
                         if manifest.id != linearMentionsExtensionID {
                             metadataRow(label: "Refresh", value: "\(String(format: "%.1f", manifest.refreshInterval))s")
                         }
-                        metadataRow(label: "Triggers", value: manifest.activationTriggers.joined(separator: ", "))
+                        metadataRow(label: "Triggers", value: localizedManifestValues(manifest.activationTriggers))
 
                         if !manifest.permissions.isEmpty {
-                            metadataRow(label: "Permissions", value: manifest.permissions.joined(separator: ", "))
+                            metadataRow(label: "Permissions", value: localizedManifestValues(manifest.permissions))
                         }
                     }
 
@@ -202,7 +202,7 @@ struct ExtensionsSettingsView: View {
                     extensionIcon(for: manifest, size: 36)
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(manifest.name)
+                        Text(manifest.localizedName)
                             .font(.title3.weight(.semibold))
                         Text("\(manifest.id) • v\(manifest.version)")
                             .font(.system(size: 11, design: .monospaced))
@@ -223,7 +223,7 @@ struct ExtensionsSettingsView: View {
                     .foregroundColor(manager.runtimes[manifest.id] == nil ? .secondary : .green)
             }
 
-            Text(manifest.description)
+            Text(manifest.localizedDescription)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.secondary)
 
@@ -255,7 +255,7 @@ struct ExtensionsSettingsView: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
-                    Text(manifest.name)
+                    Text(manifest.localizedName)
                         .font(.system(size: 13, weight: .semibold))
                         .lineLimit(1)
 
@@ -358,6 +358,27 @@ struct ExtensionsSettingsView: View {
                 .foregroundColor(.primary)
                 .textSelection(.enabled)
             Spacer(minLength: 0)
+        }
+    }
+
+    private func localizedManifestValues(_ values: [String]) -> String {
+        values.map(localizedManifestValue).joined(separator: ", ")
+    }
+
+    private func localizedManifestValue(_ value: String) -> String {
+        switch value {
+        case "manual":
+            return String(localized: "manual")
+        case "timer":
+            return String(localized: "timer")
+        case "network":
+            return String(localized: "network")
+        case "storage":
+            return String(localized: "storage")
+        case "notifications":
+            return String(localized: "notifications")
+        default:
+            return value
         }
     }
 

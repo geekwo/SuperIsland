@@ -66,7 +66,7 @@ struct ViewNodeRenderer: View {
     var body: some View {
         switch node {
         case .text(let value, let style, let color, let lineLimit):
-            Text(value)
+            Text(localized(value))
                 .font(style.font)
                 .foregroundStyle(color.swiftUI)
                 .lineLimit(lineLimit)
@@ -75,14 +75,14 @@ struct ViewNodeRenderer: View {
 
         case .marqueeText(let value, let style, let color):
             ExtensionMarqueeTextNode(
-                value: value,
+                value: localized(value),
                 style: style,
                 color: color.swiftUI
             )
 
         case .markdownText(let value, let style, let color, let lineLimit):
             ExtensionMarkdownTextNode(
-                markdown: value,
+                markdown: localized(value),
                 style: style,
                 color: color.swiftUI,
                 lineLimit: lineLimit
@@ -178,7 +178,7 @@ struct ViewNodeRenderer: View {
 
         case .gauge(let value, let min, let max, let label):
             Gauge(value: value, in: min...max) {
-                Text(label ?? "")
+                Text(localized(label ?? ""))
             }
 
         case .divider:
@@ -197,7 +197,7 @@ struct ViewNodeRenderer: View {
             ExtensionInputBoxNode(
                 extensionID: extensionID,
                 inputID: inputID,
-                placeholder: placeholder,
+                placeholder: localized(placeholder),
                 text: text,
                 actionID: actionID,
                 autoFocus: autoFocus,
@@ -209,7 +209,7 @@ struct ViewNodeRenderer: View {
         case .toggle(let isOn, let label, let actionID):
             ExtensionToggleNode(
                 extensionID: extensionID,
-                label: label,
+                label: localized(label),
                 isOn: isOn,
                 actionID: actionID
             )
@@ -263,6 +263,10 @@ struct ViewNodeRenderer: View {
         case .empty:
             EmptyView()
         }
+    }
+
+    private func localized(_ value: String) -> String {
+        ExtensionLocalization.localized(value, extensionID: extensionID)
     }
 
     private func verticalAlignment(from value: String) -> VerticalAlignment {
