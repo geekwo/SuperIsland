@@ -53,7 +53,7 @@ struct UpdateDialogView: View {
     private var statusText: some View {
         switch updater.state {
         case .idle:
-            Text("Version \(version) is ready to install.")
+            Text(String(format: String(localized: "Version %@ is ready to install."), version))
                 .font(.system(size: 12))
                 .foregroundStyle(Color.white.opacity(0.45))
         case .downloading(let progress):
@@ -62,7 +62,7 @@ struct UpdateDialogView: View {
                     .progressViewStyle(.linear)
                     .tint(Color.white.opacity(0.8))
                     .frame(width: 160)
-                Text("Downloading \(Int(progress * 100))%")
+                Text(String(format: String(localized: "Downloading %d%%"), Int(progress * 100)))
                     .font(.system(size: 11))
                     .foregroundStyle(Color.white.opacity(0.4))
             }

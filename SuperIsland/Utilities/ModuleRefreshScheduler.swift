@@ -10,20 +10,20 @@ enum EnergyMode: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .normal: return "Normal"
-        case .smart: return "Smart"
-        case .lowPower: return "Low Power"
+        case .normal: return String(localized: "Normal")
+        case .smart: return String(localized: "Smart")
+        case .lowPower: return String(localized: "Low Power")
         }
     }
 
     var description: String {
         switch self {
         case .normal:
-            return "Keep refresh behavior responsive."
+            return String(localized: "Keep refresh behavior responsive.")
         case .smart:
-            return "Reduce background work while collapsed and restore quickly on hover."
+            return String(localized: "Reduce background work while collapsed and restore quickly on hover.")
         case .lowPower:
-            return "Slow non-essential refresh and pause inactive extension work."
+            return String(localized: "Slow non-essential refresh and pause inactive extension work.")
         }
     }
 }

@@ -311,11 +311,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func buildStatusMenu() -> NSMenu {
         let menu = NSMenu()
-        menu.addItem(makeMenuItem(title: "Now Playing", action: #selector(showNowPlaying)))
-        menu.addItem(makeMenuItem(title: "Battery", action: #selector(showBattery)))
+        menu.addItem(makeMenuItem(title: String(localized: "Now Playing"), action: #selector(showNowPlaying)))
+        menu.addItem(makeMenuItem(title: String(localized: "Battery"), action: #selector(showBattery)))
         menu.addItem(NSMenuItem.separator())
 
-        let modulesItem = NSMenuItem(title: "Modules", action: nil, keyEquivalent: "")
+        let modulesItem = NSMenuItem(title: String(localized: "Modules"), action: nil, keyEquivalent: "")
         let modulesMenu = NSMenu()
 
         for module in ModuleType.allCases {
@@ -346,9 +346,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(modulesItem)
 
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(makeMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
+        menu.addItem(makeMenuItem(title: String(localized: "Settings..."), action: #selector(openSettings), keyEquivalent: ","))
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(makeMenuItem(title: "Quit SuperIsland", action: #selector(quitApp), keyEquivalent: "q"))
+        menu.addItem(makeMenuItem(title: String(localized: "Quit SuperIsland"), action: #selector(quitApp), keyEquivalent: "q"))
         return menu
     }
 

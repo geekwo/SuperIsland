@@ -7,11 +7,11 @@ enum SettingsPane: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .general:    "General"
-        case .modules:    "Modules"
-        case .appearance: "Appearance"
-        case .extensions: "Extensions"
-        case .advanced:   "Advanced"
+        case .general:    String(localized: "General")
+        case .modules:    String(localized: "Modules")
+        case .appearance: String(localized: "Appearance")
+        case .extensions: String(localized: "Extensions")
+        case .advanced:   String(localized: "Advanced")
         }
     }
 
@@ -32,6 +32,10 @@ private let settingsCard  = Color(white: 0.163)   // #2A2A2A — card background
 private let settingsSel   = Color(white: 0.200)   // #333333 — sidebar selected
 private let settingsBorder = Color(white: 1.0, opacity: 0.08)
 private let settingsDivider = Color(white: 1.0, opacity: 0.10)
+
+func localizedString(_ key: String) -> String {
+    String(localized: String.LocalizationValue(key))
+}
 
 struct SettingsView: View {
     @State private var selectedPane: SettingsPane = .general
@@ -151,7 +155,7 @@ struct SettingSectionLabel: View {
     let title: String
 
     var body: some View {
-        Text(title)
+        Text(localizedString(title))
             .font(.system(size: 11))
             .foregroundColor(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -194,9 +198,9 @@ struct SettingToggleRow: View {
     var body: some View {
         HStack(alignment: description != nil ? .top : .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.system(size: 13))
+                Text(localizedString(title)).font(.system(size: 13))
                 if let desc = description {
-                    Text(desc)
+                    Text(localizedString(desc))
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -260,10 +264,10 @@ struct SettingsCard<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 3) {
-                Text(title)
+                Text(localizedString(title))
                     .font(.system(size: 12, weight: .medium))
                 if let subtitle {
-                    Text(subtitle)
+                    Text(localizedString(subtitle))
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
                 }

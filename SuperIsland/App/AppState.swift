@@ -30,15 +30,15 @@ enum ModuleType: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .nowPlaying: return "Now Playing"
-        case .volumeHUD: return "Volume"
-        case .battery: return "Battery"
-        case .shelf: return "Shelf"
-        case .connectivity: return "Connectivity"
-        case .calendar: return "Calendar"
-        case .weather: return "Weather"
-        case .notifications: return "Notifications"
-        case .teleprompter: return "Teleprompter"
+        case .nowPlaying: return String(localized: "Now Playing")
+        case .volumeHUD: return String(localized: "Volume")
+        case .battery: return String(localized: "Battery")
+        case .shelf: return String(localized: "Shelf")
+        case .connectivity: return String(localized: "Connectivity")
+        case .calendar: return String(localized: "Calendar")
+        case .weather: return String(localized: "Weather")
+        case .notifications: return String(localized: "Notifications")
+        case .teleprompter: return String(localized: "Teleprompter")
         }
     }
 
@@ -67,10 +67,10 @@ enum NotchHapticIntensity: Int, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .off: return "Off"
-        case .subtle: return "Subtle"
-        case .medium: return "Medium"
-        case .strong: return "Strong"
+        case .off: return String(localized: "Off")
+        case .subtle: return String(localized: "Subtle")
+        case .medium: return String(localized: "Medium")
+        case .strong: return String(localized: "Strong")
         }
     }
 
@@ -210,7 +210,7 @@ enum FullExpandedTab: Hashable, Identifiable {
     var title: String {
         switch self {
         case .home:
-            return "Home"
+            return String(localized: "Home")
         case .module(let module):
             return module.displayName
         }

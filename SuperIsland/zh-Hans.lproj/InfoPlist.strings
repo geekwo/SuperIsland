@@ -1,0 +1,10 @@
+/* Privacy usage descriptions */
+"NSCalendarsFullAccessUsageDescription" = "SuperIsland 需要访问日历，以显示即将到来的日程。";
+"NSCalendarsUsageDescription" = "SuperIsland 需要访问日历，以显示即将到来的日程。";
+"NSBluetoothAlwaysUsageDescription" = "SuperIsland 需要访问蓝牙，以显示已连接设备的通知。";
+"NSLocationUsageDescription" = "SuperIsland 需要访问位置，以提供天气信息。";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "SuperIsland 需要访问位置，以提供天气信息。";
+"NSLocationWhenInUseUsageDescription" = "SuperIsland 需要访问位置，以提供天气信息。";
+"NSMicrophoneUsageDescription" = "SuperIsland 需要访问麦克风，用于音频可视化和提词器逐词跟读。";
+"NSSpeechRecognitionUsageDescription" = "SuperIsland 使用语音识别，在你朗读提词器脚本时同步跟随。";
+"NSAppleEventsUsageDescription" = "SuperIsland 需要自动化权限，以检测浏览器和音乐 App 中正在播放的媒体。";

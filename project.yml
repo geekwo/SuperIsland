@@ -1,6 +1,11 @@
 name: SuperIsland
 options:
   bundleIdPrefix: com.workview
+  developmentLanguage: en
+  knownRegions:
+    - Base
+    - en
+    - zh-Hans
   deploymentTarget:
     macOS: "14.0"
   minimumXcodeGenVersion: "2.35"

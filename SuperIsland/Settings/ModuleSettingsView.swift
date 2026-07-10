@@ -238,18 +238,18 @@ struct ModuleSettingsView: View {
 
         if microphoneStatus == .denied || microphoneStatus == .restricted ||
             speechStatus == .denied || speechStatus == .restricted {
-            return "Access was denied or restricted. Open System Settings to enable Word Tracking."
+            return String(localized: "Access was denied or restricted. Open System Settings to enable Word Tracking.")
         }
 
         switch (microphone, speech) {
         case (true, true):
-            return "Microphone and Speech Recognition are ready for Word Tracking."
+            return String(localized: "Microphone and Speech Recognition are ready for Word Tracking.")
         case (false, true):
-            return "Microphone access will be requested when Word Tracking is enabled."
+            return String(localized: "Microphone access will be requested when Word Tracking is enabled.")
         case (true, false):
-            return "Speech Recognition access will be requested when Word Tracking is enabled."
+            return String(localized: "Speech Recognition access will be requested when Word Tracking is enabled.")
         case (false, false):
-            return "Microphone and Speech Recognition access are requested when Teleprompter is enabled."
+            return String(localized: "Microphone and Speech Recognition access are requested when Teleprompter is enabled.")
         }
     }
 
@@ -258,9 +258,9 @@ struct ModuleSettingsView: View {
         let speech = PermissionsManager.shared.speechRecognitionAuthorizationStatus()
         if microphone == .denied || microphone == .restricted ||
             speech == .denied || speech == .restricted {
-            return "Open Settings"
+            return String(localized: "Open Settings")
         }
-        return "Grant Access"
+        return String(localized: "Grant Access")
     }
 
     private var calendarPermissionRow: some View {
@@ -519,50 +519,50 @@ struct ModuleSettingsView: View {
     private var calendarPermissionDescription: String {
         switch calendarManager.authorizationStatus {
         case .fullAccess, .authorized:
-            return "Allowed. Choose which calendars appear in SuperIsland."
+            return String(localized: "Allowed. Choose which calendars appear in SuperIsland.")
         case .notDetermined:
-            return "Not requested. Allow access to show upcoming events."
+            return String(localized: "Not requested. Allow access to show upcoming events.")
         case .denied:
-            return "Denied. Open System Settings to allow Calendar access."
+            return String(localized: "Denied. Open System Settings to allow Calendar access.")
         case .restricted:
-            return "Restricted by macOS settings."
+            return String(localized: "Restricted by macOS settings.")
         case .writeOnly:
-            return "Write-only access is not enough to display events."
+            return String(localized: "Write-only access is not enough to display events.")
         @unknown default:
-            return "Unknown. Check macOS Calendar privacy settings."
+            return String(localized: "Unknown. Check macOS Calendar privacy settings.")
         }
     }
 
     private var notificationPermissionDescription: String {
         switch notificationManager.authorizationStatus {
         case .authorized:
-            return "Allowed. SuperIsland can send its own notifications and extension alerts."
+            return String(localized: "Allowed. SuperIsland can send its own notifications and extension alerts.")
         case .denied:
-            return "Denied. Open System Settings to allow SuperIsland notifications."
+            return String(localized: "Denied. Open System Settings to allow SuperIsland notifications.")
         case .notDetermined:
-            return "Not requested. Allow this when you want SuperIsland or extensions to send macOS notifications."
+            return String(localized: "Not requested. Allow this when you want SuperIsland or extensions to send macOS notifications.")
         case .provisional, .ephemeral:
-            return "Allowed with limited delivery."
+            return String(localized: "Allowed with limited delivery.")
         @unknown default:
-            return "Unknown. Check macOS notification settings."
+            return String(localized: "Unknown. Check macOS notification settings.")
         }
     }
 
     private var calendarPermissionButtonTitle: String {
         switch calendarManager.authorizationStatus {
         case .notDetermined:
-            return "Request"
+            return String(localized: "Request")
         default:
-            return "Open Settings"
+            return String(localized: "Open Settings")
         }
     }
 
     private var notificationPermissionButtonTitle: String {
         switch notificationManager.authorizationStatus {
         case .notDetermined:
-            return "Request"
+            return String(localized: "Request")
         default:
-            return "Open Settings"
+            return String(localized: "Open Settings")
         }
     }
 
@@ -587,17 +587,17 @@ struct ModuleSettingsView: View {
     private func calendarTypeLabel(_ type: EKCalendarType) -> String {
         switch type {
         case .local:
-            return "Local"
+            return String(localized: "Local")
         case .calDAV:
             return "CalDAV"
         case .exchange:
             return "Exchange"
         case .subscription:
-            return "Subscription"
+            return String(localized: "Subscription")
         case .birthday:
-            return "Birthdays"
+            return String(localized: "Birthdays")
         @unknown default:
-            return "Calendar"
+            return String(localized: "Calendar")
         }
     }
 
@@ -626,7 +626,7 @@ struct ModuleSettingsView: View {
 
     private func homeSlotRow(title: String, selection: Binding<String>) -> some View {
         HStack {
-            Text(title)
+            Text(localizedString(title))
                 .font(.system(size: 13))
             Spacer(minLength: 12)
             Picker("", selection: selection) {
@@ -698,6 +698,6 @@ struct ModuleSettingsView: View {
         if !nowPlayingManager.browserDetectionTestMessage.isEmpty {
             return nowPlayingManager.browserDetectionTestMessage
         }
-        return "Requires Automation permission and JavaScript from Apple Events in the browser."
+        return String(localized: "Requires Automation permission and JavaScript from Apple Events in the browser.")
     }
 }

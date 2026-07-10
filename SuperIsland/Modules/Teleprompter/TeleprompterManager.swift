@@ -10,17 +10,17 @@ enum TeleprompterListeningMode: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .classic: return "Classic"
-        case .wordTracking: return "Word Tracking"
+        case .classic: return String(localized: "Classic")
+        case .wordTracking: return String(localized: "Word Tracking")
         }
     }
 
     var description: String {
         switch self {
         case .classic:
-            return "Auto-scrolls at a constant speed."
+            return String(localized: "Auto-scrolls at a constant speed.")
         case .wordTracking:
-            return "Highlights words as you read aloud."
+            return String(localized: "Highlights words as you read aloud.")
         }
     }
 

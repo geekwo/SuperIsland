@@ -19,27 +19,27 @@ enum PermissionType: CaseIterable {
 
     var title: String {
         switch self {
-        case .accessibility: return "Accessibility"
-        case .screenRecording: return "Screen Recording"
-        case .calendar: return "Calendar"
-        case .notifications: return "Notifications"
-        case .microphone: return "Microphone"
-        case .speechRecognition: return "Speech Recognition"
-        case .location: return "Location"
-        case .bluetooth: return "Bluetooth"
+        case .accessibility: return String(localized: "Accessibility")
+        case .screenRecording: return String(localized: "Screen Recording")
+        case .calendar: return String(localized: "Calendar")
+        case .notifications: return String(localized: "Notifications")
+        case .microphone: return String(localized: "Microphone")
+        case .speechRecognition: return String(localized: "Speech Recognition")
+        case .location: return String(localized: "Location")
+        case .bluetooth: return String(localized: "Bluetooth")
         }
     }
 
     var description: String {
         switch self {
-        case .accessibility: return "Needed for gesture detection and system event monitoring"
-        case .screenRecording: return "Lets SuperIsland appear properly in screen recordings"
-        case .calendar: return "Show upcoming events in the Super Island"
-        case .notifications: return "Show supported notification sources in the Super Island"
-        case .microphone: return "Audio visualization for the spectrogram"
-        case .speechRecognition: return "Follow along with Teleprompter scripts as you read"
-        case .location: return "Provide weather information for your location"
-        case .bluetooth: return "Show connected device notifications"
+        case .accessibility: return String(localized: "Needed for gesture detection and system event monitoring")
+        case .screenRecording: return String(localized: "Lets SuperIsland appear properly in screen recordings")
+        case .calendar: return String(localized: "Show upcoming events in the Super Island")
+        case .notifications: return String(localized: "Show supported notification sources in the Super Island")
+        case .microphone: return String(localized: "Audio visualization for the spectrogram")
+        case .speechRecognition: return String(localized: "Follow along with Teleprompter scripts as you read")
+        case .location: return String(localized: "Provide weather information for your location")
+        case .bluetooth: return String(localized: "Show connected device notifications")
         }
     }
 

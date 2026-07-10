@@ -416,7 +416,7 @@ private struct PermissionRow: View {
                 GrantedBadge()
             } else {
                 Button(action: action) {
-                    Text(permission == .bluetooth ? "Open Settings" : "Grant")
+                    Text(permission == .bluetooth ? String(localized: "Open Settings") : String(localized: "Grant"))
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(Color.white.opacity(0.85))
                         .padding(.horizontal, 12)
@@ -441,7 +441,7 @@ private struct GrantedBadge: View {
         HStack(spacing: 4) {
             Image(systemName: "checkmark")
                 .font(.system(size: 8, weight: .bold))
-            Text("Granted")
+            Text(String(localized: "Granted"))
                 .font(.system(size: 11, weight: .semibold))
         }
         .foregroundStyle(OBColors.accent)
@@ -649,12 +649,12 @@ private struct ExtensionRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text(ext.name)
+                    Text(localizedString(ext.name))
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(OBColors.textPrimary)
 
                     if let badge = ext.badge {
-                        Text(badge)
+                        Text(localizedString(badge))
                             .font(.system(size: 9, weight: .bold, design: .rounded))
                             .foregroundStyle(Color.white.opacity(0.45))
                             .padding(.horizontal, 6)
@@ -663,7 +663,7 @@ private struct ExtensionRow: View {
                     }
                 }
 
-                Text(ext.description)
+                Text(localizedString(ext.description))
                     .font(.system(size: 11, weight: .regular))
                     .foregroundStyle(OBColors.textTertiary)
             }
@@ -671,7 +671,7 @@ private struct ExtensionRow: View {
             Spacer(minLength: 4)
 
             Button(action: toggle) {
-                Text(isEnabled ? "Added" : "Add")
+                Text(isEnabled ? String(localized: "Added") : String(localized: "Add"))
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(isEnabled ? OBColors.accent : Color.white.opacity(0.85))
                     .padding(.horizontal, 14)
@@ -734,8 +734,8 @@ private struct ReadyScreen: View {
     private var enabledNames: String {
         let names = OnboardingExtensionInfo.available
             .filter { enabledExtensions.contains($0.id) }
-            .map(\.name)
-        if names.isEmpty { return "None" }
+            .map { localizedString($0.name) }
+        if names.isEmpty { return String(localized: "None") }
         return names.joined(separator: ", ")
     }
 
@@ -765,7 +765,7 @@ private struct ReadyScreen: View {
                 SummaryRow(
                     icon: "checkmark.shield.fill",
                     title: "Permissions",
-                    detail: "\(grantedCount) of 4 granted",
+                    detail: String(format: String(localized: "%d of 4 granted"), grantedCount),
                     isFirst: true
                 )
                 SummaryRow(
@@ -812,7 +812,7 @@ private struct SummaryRow: View {
                 .foregroundStyle(OBColors.accent)
                 .frame(width: 24)
 
-            Text(title)
+            Text(localizedString(title))
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(OBColors.textPrimary)
 
@@ -839,7 +839,7 @@ private struct PrimaryButton: View {
 
     var body: some View {
         Button(action: action) {
-            Text(title)
+            Text(localizedString(title))
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(Color.black.opacity(isDisabled ? 0.5 : 0.92))
                 .frame(width: 200, height: 42)
@@ -866,7 +866,7 @@ private struct NavBackButton: View {
             HStack(spacing: 4) {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 11, weight: .semibold))
-                Text("Back")
+                Text(String(localized: "Back"))
                     .font(.system(size: 13, weight: .medium))
             }
             .foregroundStyle(Color.white.opacity(0.55))
