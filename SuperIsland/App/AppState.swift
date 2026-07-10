@@ -631,7 +631,14 @@ final class AppState: ObservableObject {
         let delay = delayOverride ?? expandedAutoDismissDelay
         guard delay > 0 else { return }
         let workItem = DispatchWorkItem { [weak self] in
-            self?.dismiss()
+            guard let self,
+                  self.currentState == .expanded,
+                  !self.isHovering,
+                  !self.suppressDismissScheduling,
+                  !self.isShelfDragActive,
+                  !self.isSystemEmojiInteractionActive,
+                  !self.isPresentationHeld(self.activeModule) else { return }
+            self.dismiss()
         }
         autoDismissWorkItem = workItem
         DispatchQueue.main.asyncAfter(

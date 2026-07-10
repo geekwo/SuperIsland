@@ -410,18 +410,24 @@ struct IslandContainerView: View {
     }
 
     private func validateHoverState() {
-        guard appState.isHovering else { return }
         let islandPanels = NSApp.windows.compactMap { $0 as? IslandPanel }
         guard !islandPanels.isEmpty else { return }
 
         let pointerLocation = NSEvent.mouseLocation
         // Multi-display: hover is valid if the pointer is over ANY island.
-        guard !islandPanels.contains(where: { $0.frame.contains(pointerLocation) }) else { return }
+        let isPointerOverIsland = islandPanels.contains { $0.frame.contains(pointerLocation) }
 
-        isHoveringIslandSurface = false
-        isHoveringPreviousButton = false
-        isHoveringNextButton = false
-        syncHoverState()
+        if isPointerOverIsland {
+            guard !appState.isHovering else { return }
+            isHoveringIslandSurface = true
+            syncHoverState()
+        } else {
+            guard appState.isHovering else { return }
+            isHoveringIslandSurface = false
+            isHoveringPreviousButton = false
+            isHoveringNextButton = false
+            syncHoverState()
+        }
     }
 }
 
