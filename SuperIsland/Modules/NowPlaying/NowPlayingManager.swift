@@ -55,6 +55,8 @@ final class NowPlayingManager: ObservableObject {
     @Published var isPlaying: Bool = false
     @Published var duration: TimeInterval = 0
     @Published var elapsedTime: TimeInterval = 0
+    @Published private(set) var displayElapsedTime: TimeInterval = 0
+    @Published private(set) var snapshotDate: Date = .distantPast
     @Published var playbackRate: Double = 0
     @Published var sourceName: String = "" // "Spotify", "Apple Music", "Chrome", etc.
     @Published var providerStatus: NowPlayingProviderStatus = .idle
@@ -95,8 +97,7 @@ final class NowPlayingManager: ObservableObject {
     private var setElapsedTimeFunc: MRMediaRemoteSetElapsedTimeFunction?
 
     private var sourceRefreshToken: ModuleRefreshToken?
-    private var playbackRefreshToken: ModuleRefreshToken?
-    private var lastPlaybackTickDate: Date?
+    private var playbackDisplayTimer: Timer?
     private var cancellables = Set<AnyCancellable>()
 
     // Track whether MediaRemote is providing data
@@ -283,11 +284,13 @@ final class NowPlayingManager: ObservableObject {
                 self.artist = info[kMRMediaRemoteNowPlayingInfoArtist] as? String ?? ""
                 self.album = info[kMRMediaRemoteNowPlayingInfoAlbum] as? String ?? ""
                 self.duration = info[kMRMediaRemoteNowPlayingInfoDuration] as? TimeInterval ?? 0
-                self.elapsedTime = info[kMRMediaRemoteNowPlayingInfoElapsedTime] as? TimeInterval ?? 0
                 self.playbackRate = newPlaybackRate
                 self.isPlaying = newIsPlaying
                 self.sourceName = "System Media"
                 self.providerStatus = newIsPlaying ? .playing("System Media") : .paused("System Media")
+                self.updatePlaybackSnapshot(
+                    elapsedTime: (info[kMRMediaRemoteNowPlayingInfoElapsedTime] as? TimeInterval) ?? self.estimatedElapsedTime()
+                )
 
                 if let artworkData = info[kMRMediaRemoteNowPlayingInfoArtworkData] as? Data {
                     self.albumArt = NSImage(data: artworkData)
@@ -313,8 +316,10 @@ final class NowPlayingManager: ObservableObject {
     private func fetchPlaybackState() {
         getIsPlayingFunc?(DispatchQueue.main) { [weak self] playing in
             guard let self else { return }
+            let currentElapsedTime = self.estimatedElapsedTime()
             self.isPlaying = playing
             self.providerStatus = playing ? .playing(self.sourceName) : .paused(self.sourceName)
+            self.updatePlaybackSnapshot(elapsedTime: currentElapsedTime)
             self.updatePlaybackTimer()
         }
     }
@@ -372,9 +377,9 @@ final class NowPlayingManager: ObservableObject {
 
         let payload = update.payload
         let diff = update.diff ?? false
-        let previousElapsedTime = elapsedTime
+        let previousElapsedTime = estimatedElapsedTime()
         let previousPlaybackRate = playbackRate
-        let previousPlaybackUpdateDate = lastPlaybackUpdateDate
+        let previousPlaybackUpdateDate = snapshotDate == .distantPast ? lastPlaybackUpdateDate : snapshotDate
         let incomingBundleIdentifier = payload.parentApplicationBundleIdentifier ?? payload.bundleIdentifier ?? ""
         let bundleIdentifier = incomingBundleIdentifier.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? (diff ? currentBundleIdentifier : "")
@@ -465,7 +470,10 @@ final class NowPlayingManager: ObservableObject {
             resolvedDuration > 0 &&
             resolvedElapsedTime < resolvedDuration
 
-        elapsedTime = shouldResetSuspiciousElapsedTime ? 0 : resolvedElapsedTime
+        updatePlaybackSnapshot(
+            elapsedTime: shouldResetSuspiciousElapsedTime ? 0 : resolvedElapsedTime,
+            capturedAt: payload.elapsedTime == nil ? Date() : resolvedUpdateDate
+        )
 
         if isChromeBundleIdentifier(bundleIdentifier) {
             if !resolvedIsPlaying && !currentChromeTabURL.isEmpty {
@@ -971,11 +979,11 @@ final class NowPlayingManager: ObservableObject {
         artist = snapshot.artist
         album = snapshot.album
         duration = snapshot.duration
-        elapsedTime = snapshot.elapsedTime
         playbackRate = snapshot.playbackRate
         isPlaying = stale ? false : snapshot.isPlaying
         sourceName = snapshot.sourceName
         providerStatus = stale ? .stale(snapshot.sourceName) : (snapshot.isPlaying ? .playing(snapshot.sourceName) : .paused(snapshot.sourceName))
+        updatePlaybackSnapshot(elapsedTime: snapshot.elapsedTime, capturedAt: snapshot.capturedAt)
 
         if snapshot.browserTabURL.isEmpty {
             lastPausedChromeTabURL = ""
@@ -1023,7 +1031,7 @@ final class NowPlayingManager: ObservableObject {
             artist: artist,
             album: album,
             duration: duration,
-            elapsedTime: elapsedTime,
+            elapsedTime: currentElapsedTime,
             playbackRate: playbackRate,
             isPlaying: isPlaying,
             sourceName: sourceName,
@@ -1119,41 +1127,64 @@ final class NowPlayingManager: ObservableObject {
     // MARK: - Playback Timer
 
     private func updatePlaybackTimer() {
-        ModuleRefreshScheduler.shared.unregister(playbackRefreshToken)
-        playbackRefreshToken = nil
-        lastPlaybackTickDate = nil
+        playbackDisplayTimer?.invalidate()
+        playbackDisplayTimer = nil
 
-        guard isPlaying, duration > 0 else { return }
+        updateDisplayElapsedTime()
 
-        lastPlaybackTickDate = Date()
-        playbackRefreshToken = ModuleRefreshScheduler.shared.register(
-            id: "nowPlaying.progress",
-            name: String(localized: "Now Playing progress"),
-            module: .builtIn(.nowPlaying),
-            policy: .visibleOnly(1, tolerance: 0.2),
-            enabled: { [weak self] in
-                AppState.shared.nowPlayingEnabled && (self?.isPlaying ?? false)
+        guard isPlaying, !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+
+        let timer = Timer(timeInterval: 0.5, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.advancePlaybackProgress()
             }
-        ) { [weak self] in
-            self?.advancePlaybackProgress()
         }
+        timer.tolerance = 0.1
+        RunLoop.main.add(timer, forMode: .common)
+        playbackDisplayTimer = timer
     }
 
     private func advancePlaybackProgress() {
-        guard isPlaying, duration > 0 else {
+        guard isPlaying else {
             updatePlaybackTimer()
             return
         }
 
-        let now = Date()
-        let delta = lastPlaybackTickDate.map { now.timeIntervalSince($0) } ?? 1
-        lastPlaybackTickDate = now
+        updateDisplayElapsedTime()
 
-        elapsedTime += min(max(delta, 0.5), 5) * max(playbackRate, 1)
-        if elapsedTime >= duration {
-            elapsedTime = duration
-            updatePlaybackTimer()
+        if duration > 0, displayElapsedTime >= duration {
+            playbackDisplayTimer?.invalidate()
+            playbackDisplayTimer = nil
         }
+    }
+
+    private func updatePlaybackSnapshot(elapsedTime: TimeInterval, capturedAt: Date = Date()) {
+        self.elapsedTime = clampElapsedTime(elapsedTime, duration: duration)
+        snapshotDate = capturedAt
+        updateDisplayElapsedTime()
+    }
+
+    private func updateDisplayElapsedTime() {
+        let nextElapsedTime = estimatedElapsedTime()
+        guard abs(displayElapsedTime - nextElapsedTime) >= 0.05 else { return }
+        displayElapsedTime = nextElapsedTime
+    }
+
+    var currentElapsedTime: TimeInterval {
+        estimatedElapsedTime()
+    }
+
+    private func estimatedElapsedTime(at date: Date = Date()) -> TimeInterval {
+        let rate = playbackRate > 0 ? playbackRate : (isPlaying ? 1 : 0)
+        let estimatedElapsedTime: TimeInterval
+
+        if isPlaying, rate > 0, snapshotDate != .distantPast {
+            estimatedElapsedTime = elapsedTime + max(0, date.timeIntervalSince(snapshotDate)) * rate
+        } else {
+            estimatedElapsedTime = elapsedTime
+        }
+
+        return clampElapsedTime(estimatedElapsedTime, duration: duration)
     }
 
     // MARK: - Playback Controls
@@ -1172,7 +1203,9 @@ final class NowPlayingManager: ObservableObject {
         let shouldPlay = !isPlaying
 
         // Immediately toggle local state for responsive UI
+        let currentElapsedTime = estimatedElapsedTime()
         isPlaying = shouldPlay
+        updatePlaybackSnapshot(elapsedTime: currentElapsedTime)
         updatePlaybackTimer()
 
         // Browser playback is checked first because the MediaRemote command
@@ -1243,7 +1276,7 @@ final class NowPlayingManager: ObservableObject {
 
     func seek(to time: TimeInterval) {
         let clampedTime = max(0, min(time, duration))
-        elapsedTime = clampedTime
+        updatePlaybackSnapshot(elapsedTime: clampedTime)
         updatePlaybackTimer()
 
         if shouldUseMediaRemoteControls {
@@ -1265,7 +1298,7 @@ final class NowPlayingManager: ObservableObject {
     // MARK: - Helpers
 
     var formattedElapsedTime: String {
-        formatTime(elapsedTime)
+        formatTime(displayElapsedTime)
     }
 
     var formattedDuration: String {
@@ -1274,7 +1307,7 @@ final class NowPlayingManager: ObservableObject {
 
     var progress: Double {
         guard duration > 0 else { return 0 }
-        return elapsedTime / duration
+        return displayElapsedTime / duration
     }
 
     var browserTargets: [NowPlayingBrowserTarget] {
@@ -1507,7 +1540,8 @@ final class NowPlayingManager: ObservableObject {
             "album": album.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? NSNull() : album,
             "albumArtist": currentAlbumArtist.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? NSNull() : currentAlbumArtist,
             "durationSeconds": duration > 0 ? duration : NSNull(),
-            "elapsedSeconds": elapsedTime >= 0 ? elapsedTime : NSNull(),
+            "elapsedSeconds": currentElapsedTime >= 0 ? currentElapsedTime : NSNull(),
+            "playbackRate": playbackRate,
             "artworkURL": resolvedArtworkURL ?? NSNull(),
             "playbackState": isPlaying ? "playing" : "paused",
             "trackIdentifier": currentTrackIdentifier.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? NSNull() : currentTrackIdentifier,
@@ -1588,6 +1622,8 @@ final class NowPlayingManager: ObservableObject {
         isPlaying = false
         duration = 0
         elapsedTime = 0
+        displayElapsedTime = 0
+        snapshotDate = .distantPast
         playbackRate = 0
         sourceName = ""
         currentAlbumArtist = ""
@@ -1599,19 +1635,17 @@ final class NowPlayingManager: ObservableObject {
         currentBundleIdentifier = ""
         lastDetectedTitle = ""
         providerStatus = browserDetectionEnabled ? .idle : .browserDisabled
-        ModuleRefreshScheduler.shared.unregister(playbackRefreshToken)
-        playbackRefreshToken = nil
-        lastPlaybackTickDate = nil
+        playbackDisplayTimer?.invalidate()
+        playbackDisplayTimer = nil
     }
 
     deinit {
         providerRefreshTask?.cancel()
         let sourceToken = sourceRefreshToken
-        let playbackToken = playbackRefreshToken
         Task { @MainActor in
             ModuleRefreshScheduler.shared.unregister(sourceToken)
-            ModuleRefreshScheduler.shared.unregister(playbackToken)
         }
+        playbackDisplayTimer?.invalidate()
         adapterStreamTask?.cancel()
         if let adapterPipeHandler {
             Task {
