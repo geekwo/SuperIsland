@@ -7,7 +7,10 @@ struct IslandContainerView: View {
     @State private var isHoveringNextButton = false
     @State private var isShelfDropTargeted = false
     @State private var shelfDragEndWorkItem: DispatchWorkItem?
+    @State private var hoverExitWorkItem: DispatchWorkItem?
     private static let hoverValidationTimer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
+    private static let compactTopHoverDeadZone: CGFloat = 2
+    private static let hoverExitDebounceDelay: TimeInterval = 0.18
 
     var body: some View {
         // No GeometryReader — just like NotchDrop. The surface sizes
@@ -385,11 +388,36 @@ struct IslandContainerView: View {
 
     private func handleSurfaceHover(phase: HoverPhase) {
         switch phase {
-        case .active:
+        case .active(let location):
+            guard shouldAcceptHoverActivation(at: location) else { return }
+            hoverExitWorkItem?.cancel()
+            hoverExitWorkItem = nil
             setIslandSurfaceHover(true)
+
         case .ended:
-            setIslandSurfaceHover(false)
+            hoverExitWorkItem?.cancel()
+            let workItem = DispatchWorkItem {
+                if isPointerOverIslandSurface() {
+                    hoverExitWorkItem = nil
+                    return
+                }
+                setIslandSurfaceHover(false)
+                hoverExitWorkItem = nil
+            }
+            hoverExitWorkItem = workItem
+            DispatchQueue.main.asyncAfter(deadline: .now() + Self.hoverExitDebounceDelay, execute: workItem)
         }
+    }
+
+    private func shouldAcceptHoverActivation(at location: CGPoint) -> Bool {
+        guard appState.currentState == .compact else { return true }
+        // SwiftUI can emit active/ended repeatedly when the pointer grazes the
+        // very top scanline of the clipped notch shape. Treat that strip as a
+        // dead zone for new entries; moving a few pixels down enters normally.
+        guard location.y > Self.compactTopHoverDeadZone else {
+            return appState.isHovering
+        }
+        return true
     }
 
     private func setCycleButtonHover(_ hovering: Bool, forward: Bool) {
@@ -410,24 +438,34 @@ struct IslandContainerView: View {
     }
 
     private func validateHoverState() {
-        let islandPanels = NSApp.windows.compactMap { $0 as? IslandPanel }
-        guard !islandPanels.isEmpty else { return }
+        guard appState.isHovering else { return }
+        guard !isPointerOverIslandSurface() else { return }
 
+        isHoveringIslandSurface = false
+        isHoveringPreviousButton = false
+        isHoveringNextButton = false
+        syncHoverState()
+    }
+
+    private func isPointerOverIslandSurface() -> Bool {
         let pointerLocation = NSEvent.mouseLocation
-        // Multi-display: hover is valid if the pointer is over ANY island.
-        let isPointerOverIsland = islandPanels.contains { $0.frame.contains(pointerLocation) }
+        let islandPanels = NSApp.windows.compactMap { $0 as? IslandPanel }
+        guard !islandPanels.isEmpty else { return false }
 
-        if isPointerOverIsland {
-            guard !appState.isHovering else { return }
-            isHoveringIslandSurface = true
-            syncHoverState()
-        } else {
-            guard appState.isHovering else { return }
-            isHoveringIslandSurface = false
-            isHoveringPreviousButton = false
-            isHoveringNextButton = false
-            syncHoverState()
+        return islandPanels.contains { panel in
+            islandSurfaceScreenRect(in: panel).contains(pointerLocation)
         }
+    }
+
+    private func islandSurfaceScreenRect(in panel: IslandPanel) -> CGRect {
+        let surfaceSize = appState.currentSize
+        let frame = panel.frame
+        return CGRect(
+            x: frame.midX - surfaceSize.width / 2,
+            y: frame.maxY - surfaceSize.height,
+            width: surfaceSize.width,
+            height: surfaceSize.height
+        )
     }
 }
 
