@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="142" y1="96" x2="860" y2="920" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#15172f"/>
+      <stop offset="0.48" stop-color="#090b17"/>
+      <stop offset="1" stop-color="#020309"/>
+    </linearGradient>
+    <radialGradient id="violet" cx="404" cy="260" r="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#40306f" stop-opacity="0.28"/>
+      <stop offset="0.55" stop-color="#17142f" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="512" cy="604" r="245" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6e7dff" stop-opacity="0.20"/>
+      <stop offset="0.52" stop-color="#3344a3" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="capsule" x1="320" y1="430" x2="704" y2="565" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#02030a"/>
+      <stop offset="0.55" stop-color="#050711"/>
+      <stop offset="1" stop-color="#010208"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="56" y="56" width="912" height="912" rx="206" fill="url(#bg)"/>
+  <rect x="56" y="56" width="912" height="912" rx="206" fill="url(#violet)"/>
+
+  <ellipse cx="512" cy="604" rx="245" ry="70" fill="url(#glow)"/>
+  <ellipse cx="512" cy="604" rx="184" ry="42" fill="#5e6eff" opacity="0.035"/>
+
+  <rect x="274" y="407" width="476" height="178" rx="89" fill="#000107" opacity="0.72"/>
+  <rect x="292" y="390" width="440" height="166" rx="83" fill="url(#capsule)"/>
+  <rect x="326" y="424" width="372" height="98" rx="49" fill="#101323" opacity="0.9"/>
+  <rect x="292" y="390" width="440" height="166" rx="83"
+        fill="none" stroke="#ffffff" stroke-opacity="0.085" stroke-width="3"/>
+
+  <path d="M340 592 C438 634 586 634 684 592"
+        fill="none" stroke="#7a82ff" stroke-opacity="0.14" stroke-width="7" stroke-linecap="round"/>
+
+  <rect x="56" y="56" width="912" height="912" rx="206" fill="none" stroke="#ffffff" stroke-opacity="0.055" stroke-width="3"/>
+</svg>

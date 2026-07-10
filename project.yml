@@ -46,7 +46,7 @@ targets:
         MARKETING_VERSION: "1.0.10"
         CURRENT_PROJECT_VERSION: "11"
         COMBINE_HIDPI_IMAGES: true
-        ASSETCATALOG_COMPILER_APPICON_NAME: ""
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/../Frameworks"
         ENABLE_HARDENED_RUNTIME: true
     entitlements:
