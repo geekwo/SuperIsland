@@ -111,7 +111,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let state = AppState.shared
 
         // Eagerly initialize all enabled managers so they start monitoring
-        if state.nowPlayingEnabled { _ = NowPlayingManager.shared }
+        if state.nowPlayingEnabled {
+            _ = NowPlayingManager.shared
+            _ = LyricsManager.shared
+        }
         if state.volumeHUDEnabled { _ = VolumeManager.shared }
         if state.batteryEnabled { _ = BatteryManager.shared }
         if state.connectivityEnabled {
