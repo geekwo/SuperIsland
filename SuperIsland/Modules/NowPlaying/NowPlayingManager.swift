@@ -43,6 +43,24 @@ private let nowPlayingSupportedBrowserTargets = [
     )
 ]
 
+struct LyricsSourceEvaluation: Equatable {
+    let isMusicSource: Bool
+    let sourceName: String
+    let bundleIdentifier: String
+    let reason: String
+
+    var sourceDescription: String {
+        let source = sourceName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let bundle = bundleIdentifier.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if source.isEmpty {
+            return bundle.isEmpty ? "Unknown" : bundle
+        }
+
+        return bundle.isEmpty ? source : "\(source) (\(bundle))"
+    }
+}
+
 @MainActor
 final class NowPlayingManager: ObservableObject {
     static let shared = NowPlayingManager()
@@ -1174,6 +1192,15 @@ final class NowPlayingManager: ObservableObject {
         estimatedElapsedTime()
     }
 
+    var lyricsSourceEvaluation: LyricsSourceEvaluation {
+        Self.evaluateLyricsSource(
+            title: title,
+            artist: artist,
+            sourceName: sourceName,
+            bundleIdentifier: currentBundleIdentifier
+        )
+    }
+
     private func estimatedElapsedTime(at date: Date = Date()) -> TimeInterval {
         let rate = playbackRate > 0 ? playbackRate : (isPlaying ? 1 : 0)
         let estimatedElapsedTime: TimeInterval
@@ -1373,6 +1400,86 @@ final class NowPlayingManager: ObservableObject {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
         return String(format: "%d:%02d", minutes, seconds)
+    }
+
+    private static func evaluateLyricsSource(
+        title: String,
+        artist: String,
+        sourceName: String,
+        bundleIdentifier: String
+    ) -> LyricsSourceEvaluation {
+        let normalizedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedArtist = artist.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedSource = sourceName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedBundle = bundleIdentifier.trimmingCharacters(in: .whitespacesAndNewlines)
+        let sourceText = "\(normalizedSource) \(normalizedBundle)"
+            .folding(options: [.diacriticInsensitive, .caseInsensitive, .widthInsensitive], locale: .current)
+            .lowercased()
+
+        let excludedSources = [
+            "youtube",
+            "youtu.be",
+            "bilibili",
+            "safari",
+            "chrome",
+            "edge",
+            "firefox",
+            "arc",
+            "browser",
+            "web media",
+            "spotify web",
+            "quicktime",
+            "yuque",
+            "语雀"
+        ]
+
+        if let excludedSource = excludedSources.first(where: { sourceText.contains($0) }) {
+            return LyricsSourceEvaluation(
+                isMusicSource: false,
+                sourceName: normalizedSource,
+                bundleIdentifier: normalizedBundle,
+                reason: "excluded source: \(excludedSource)"
+            )
+        }
+
+        let musicSources = [
+            "apple music",
+            "music.app",
+            "com.apple.music",
+            "spotify",
+            "com.spotify.client",
+            "netease",
+            "cloudmusic",
+            "163music",
+            "com.netease",
+            "网易云",
+            "网易云音乐"
+        ]
+
+        if let musicSource = musicSources.first(where: { sourceText.contains($0) }) {
+            return LyricsSourceEvaluation(
+                isMusicSource: true,
+                sourceName: normalizedSource,
+                bundleIdentifier: normalizedBundle,
+                reason: "music source: \(musicSource)"
+            )
+        }
+
+        if !normalizedTitle.isEmpty, !normalizedArtist.isEmpty {
+            return LyricsSourceEvaluation(
+                isMusicSource: true,
+                sourceName: normalizedSource,
+                bundleIdentifier: normalizedBundle,
+                reason: "title and artist fallback"
+            )
+        }
+
+        return LyricsSourceEvaluation(
+            isMusicSource: false,
+            sourceName: normalizedSource,
+            bundleIdentifier: normalizedBundle,
+            reason: "source not recognized for lyrics"
+        )
     }
 
     private var isBrowserPlaybackSource: Bool {

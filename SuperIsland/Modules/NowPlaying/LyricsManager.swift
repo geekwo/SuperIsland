@@ -20,11 +20,13 @@ final class LyricsManager: ObservableObject {
     static let shared = LyricsManager()
 
     @Published private(set) var lines: [LyricLine] = []
+    @Published private(set) var plainTextLines: [String] = []
     @Published private(set) var state: LyricsLoadState = .idle
 
     private let providers: [any LyricsProvider]
     private var cache: [LyricsCacheKey: LyricsCacheEntry] = [:]
     private var currentKey: LyricsCacheKey?
+    private var lastExcludedSignature: String?
     private var loadTask: Task<Void, Never>?
     private var cancellables = Set<AnyCancellable>()
 
@@ -55,7 +57,8 @@ final class LyricsManager: ObservableObject {
         updateTrack(
             title: nowPlaying.title,
             artist: nowPlaying.artist,
-            duration: nowPlaying.duration
+            duration: nowPlaying.duration,
+            sourceEvaluation: nowPlaying.lyricsSourceEvaluation
         )
     }
 
@@ -64,33 +67,56 @@ final class LyricsManager: ObservableObject {
 
         nowPlaying.$title
             .combineLatest(nowPlaying.$artist)
+            .combineLatest(nowPlaying.$duration)
+            .combineLatest(nowPlaying.$sourceName)
             .debounce(for: .milliseconds(700), scheduler: RunLoop.main)
-            .sink { [weak self] title, artist in
+            .sink { [weak self] combined, _ in
                 guard let self else { return }
+                let ((title, artist), duration) = combined
                 self.updateTrack(
                     title: title,
                     artist: artist,
-                    duration: nowPlaying.duration
+                    duration: duration,
+                    sourceEvaluation: nowPlaying.lyricsSourceEvaluation
                 )
             }
             .store(in: &cancellables)
     }
 
-    private func updateTrack(title: String, artist: String, duration: TimeInterval) {
+    private func updateTrack(
+        title: String,
+        artist: String,
+        duration: TimeInterval,
+        sourceEvaluation: LyricsSourceEvaluation
+    ) {
         let normalizedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         let normalizedArtist = artist.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !normalizedTitle.isEmpty else {
-            loadTask?.cancel()
-            currentKey = nil
-            lines = []
-            state = .idle
+            resetLyricsState(.idle)
             return
         }
 
-        let key = LyricsCacheKey(title: normalizedTitle, artist: normalizedArtist)
+        guard sourceEvaluation.isMusicSource else {
+            let signature = "\(normalizedTitle)|\(normalizedArtist)|\(sourceEvaluation.sourceDescription)|\(sourceEvaluation.reason)"
+            if lastExcludedSignature != signature {
+                #if DEBUG
+                print("[Lyrics] source excluded: \(sourceEvaluation.reason), source=\(sourceEvaluation.sourceDescription)")
+                #endif
+                lastExcludedSignature = signature
+            }
+            resetLyricsState(.idle)
+            return
+        }
+
+        let key = LyricsCacheKey(
+            title: normalizedTitle,
+            artist: normalizedArtist,
+            duration: duration
+        )
         guard key != currentKey else { return }
         currentKey = key
+        lastExcludedSignature = nil
 
         if let cached = cache[key] {
             apply(cached)
@@ -99,10 +125,15 @@ final class LyricsManager: ObservableObject {
 
         loadTask?.cancel()
         lines = []
+        plainTextLines = []
         state = .loading
 
         let providers = providers
         let requestedDuration = duration > 0 ? duration : nil
+
+        #if DEBUG
+        print("[Lyrics] request title=\(normalizedTitle), artist=\(normalizedArtist), source=\(sourceEvaluation.sourceDescription)")
+        #endif
 
         loadTask = Task { [weak self] in
             let entry = await Self.fetchLyrics(
@@ -161,15 +192,51 @@ final class LyricsManager: ObservableObject {
     private func apply(_ entry: LyricsCacheEntry) {
         switch entry {
         case .loaded(let lines):
-            self.lines = lines
+            let separated = Self.separateSyncedAndPlainLines(lines)
+            self.lines = separated.synced
+            plainTextLines = separated.plain
             state = .loaded
+            #if DEBUG
+            print("[Lyrics] loaded synced lines=\(separated.synced.count), plain lines=\(separated.plain.count)")
+            #endif
         case .noLyrics:
             lines = []
+            plainTextLines = []
             state = .noLyrics
+            #if DEBUG
+            print("[Lyrics] no lyrics")
+            #endif
         case .unavailable(let message):
             lines = []
+            plainTextLines = []
             state = .unavailable(message)
+            #if DEBUG
+            print("[Lyrics] no lyrics: \(message)")
+            #endif
         }
+    }
+
+    private func resetLyricsState(_ nextState: LyricsLoadState) {
+        loadTask?.cancel()
+        currentKey = nil
+        lines = []
+        plainTextLines = []
+        state = nextState
+    }
+
+    private static func separateSyncedAndPlainLines(_ lines: [LyricLine]) -> (synced: [LyricLine], plain: [String]) {
+        guard lines.count == 1,
+              lines[0].time == 0,
+              lines[0].text.contains("\n") else {
+            return (lines, [])
+        }
+
+        let plainLines = lines[0].text
+            .components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+
+        return ([], plainLines)
     }
 
     private func currentLineIndex(for elapsedTime: TimeInterval) -> Int? {
@@ -195,10 +262,12 @@ final class LyricsManager: ObservableObject {
 private struct LyricsCacheKey: Hashable {
     let title: String
     let artist: String
+    let duration: Int?
 
-    init(title: String, artist: String) {
+    init(title: String, artist: String, duration: TimeInterval) {
         self.title = Self.normalize(title)
         self.artist = Self.normalize(artist)
+        self.duration = duration > 0 ? Int(duration.rounded()) : nil
     }
 
     private static func normalize(_ value: String) -> String {

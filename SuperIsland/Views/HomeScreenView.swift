@@ -91,6 +91,7 @@ struct HomeScreenView: View {
 
 private struct HomeNowPlayingPanel: View {
     @ObservedObject private var manager = NowPlayingManager.shared
+    @ObservedObject private var lyricsManager = LyricsManager.shared
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -127,16 +128,12 @@ private struct HomeNowPlayingPanel: View {
         }
         .overlay(alignment: .bottomTrailing) {
             if !manager.title.isEmpty {
-                VStack {
-                    Spacer(minLength: 0)
-
-                    Text(verbatim: "LYRICS SLOT OVERLAY")
-                        .font(HomeTypography.metaFont)
-                        .foregroundStyle(HomeTypography.tertiaryText.opacity(0.7))
-                        .lineLimit(1)
-
-                    Spacer(minLength: 0)
-                }
+                LyricsScrollerView(
+                    lines: lyricsManager.lines,
+                    currentTime: manager.displayElapsedTime,
+                    isMusicSource: manager.lyricsSourceEvaluation.isMusicSource,
+                    plainTextLines: lyricsManager.plainTextLines
+                )
                     .frame(width: 280, height: 84)
                     .padding(.trailing, 36)
                     .padding(.bottom, 72)
