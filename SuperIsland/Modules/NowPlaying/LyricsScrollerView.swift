@@ -5,6 +5,7 @@ struct LyricsScrollerView: View {
     let currentTime: TimeInterval
     let isMusicSource: Bool
     let plainTextLines: [String]
+    let state: LyricsLoadState
 
     private var currentIndex: Int? {
         guard !lines.isEmpty else { return nil }
@@ -31,6 +32,8 @@ struct LyricsScrollerView: View {
                 syncedLyricsView
             } else if isMusicSource, !plainTextLines.isEmpty {
                 plainLyricsView
+            } else if isMusicSource, let statusText {
+                statusView(statusText)
             } else {
                 EmptyView()
             }
@@ -45,16 +48,15 @@ struct LyricsScrollerView: View {
                     ForEach(Array(lines.enumerated()), id: \.element.id) { index, line in
                         Text(line.text)
                             .font(font(for: index))
-                            .fontWeight(index == currentIndex ? .semibold : .regular)
                             .foregroundStyle(Color.white.opacity(opacity(for: index)))
                             .multilineTextAlignment(.center)
                             .lineLimit(2)
                             .frame(maxWidth: .infinity)
-                            .scaleEffect(index == currentIndex ? 1.02 : 1.0)
+                            .scaleEffect(index == currentIndex ? 1.015 : 1.0)
                             .animation(.easeInOut(duration: 0.22), value: currentIndex)
                     }
                 }
-                .padding(.vertical, 30)
+                .padding(.vertical, 36)
             }
             .scrollDisabled(true)
             .onAppear {
@@ -68,8 +70,8 @@ struct LyricsScrollerView: View {
             LinearGradient(
                 stops: [
                     .init(color: .clear, location: 0),
-                    .init(color: .black, location: 0.24),
-                    .init(color: .black, location: 0.76),
+                    .init(color: .black, location: 0.18),
+                    .init(color: .black, location: 0.82),
                     .init(color: .clear, location: 1)
                 ],
                 startPoint: .top,
@@ -79,17 +81,37 @@ struct LyricsScrollerView: View {
     }
 
     private var plainLyricsView: some View {
-        VStack(spacing: 5) {
-            ForEach(Array(plainTextLines.prefix(4).enumerated()), id: \.offset) { index, line in
+        VStack(spacing: 6) {
+            ForEach(Array(plainTextLines.prefix(5).enumerated()), id: \.offset) { index, line in
                 Text(line)
-                    .font(index == 0 ? .system(size: 11, weight: .semibold) : .system(size: 10, weight: .regular))
-                    .fontWeight(index == 0 ? .semibold : .regular)
-                    .foregroundStyle(Color.white.opacity(index == 0 ? 0.82 : 0.52))
+                    .font(index == 0 ? .system(size: 13, weight: .semibold) : .system(size: 12, weight: .regular))
+                    .foregroundStyle(Color.white.opacity(index == 0 ? 0.9 : 0.64))
                     .multilineTextAlignment(.center)
                     .lineLimit(1)
                     .frame(maxWidth: .infinity)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+    }
+
+    private var statusText: String? {
+        switch state {
+        case .loading:
+            return "正在加载歌词..."
+        case .noLyrics, .unavailable:
+            return "暂无歌词"
+        case .idle, .loaded:
+            return nil
+        }
+    }
+
+    private func statusView(_ text: String) -> some View {
+        Text(verbatim: text)
+            .font(.system(size: 11, weight: .regular))
+            .foregroundStyle(Color.white.opacity(0.42))
+            .multilineTextAlignment(.center)
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
 
     private func scrollToCurrentLine(_ proxy: ScrollViewProxy) {
@@ -101,21 +123,30 @@ struct LyricsScrollerView: View {
     }
 
     private func font(for index: Int) -> Font {
-        index == currentIndex ? .system(size: 11, weight: .semibold) : .system(size: 10, weight: .regular)
-    }
-
-    private func opacity(for index: Int) -> Double {
-        guard let currentIndex else { return 0.45 }
+        guard let currentIndex else { return .system(size: 11, weight: .regular) }
 
         switch abs(index - currentIndex) {
         case 0:
-            return 0.92
+            return .system(size: 14, weight: .semibold)
         case 1:
-            return 0.58
-        case 2:
-            return 0.34
+            return .system(size: 12, weight: .regular)
         default:
-            return 0.18
+            return .system(size: 11, weight: .regular)
+        }
+    }
+
+    private func opacity(for index: Int) -> Double {
+        guard let currentIndex else { return 0.5 }
+
+        switch abs(index - currentIndex) {
+        case 0:
+            return 0.95
+        case 1:
+            return 0.66
+        case 2:
+            return 0.38
+        default:
+            return 0.24
         }
     }
 }

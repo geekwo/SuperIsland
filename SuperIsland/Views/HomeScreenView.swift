@@ -132,12 +132,13 @@ private struct HomeNowPlayingPanel: View {
                     lines: lyricsManager.lines,
                     currentTime: manager.displayElapsedTime,
                     isMusicSource: manager.lyricsSourceEvaluation.isMusicSource,
-                    plainTextLines: lyricsManager.plainTextLines
+                    plainTextLines: lyricsManager.plainTextLines,
+                    state: lyricsManager.state
                 )
-                    .frame(width: 280, height: 84)
-                    .padding(.trailing, 36)
-                    .padding(.bottom, 72)
-                    .allowsHitTesting(false)
+                .frame(width: 460, height: 96)
+                .padding(.trailing, 48)
+                .padding(.bottom, 28)
+                .allowsHitTesting(false)
             }
         }
     }
