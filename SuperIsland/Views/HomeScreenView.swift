@@ -125,6 +125,24 @@ private struct HomeNowPlayingPanel: View {
                 }
             }
         }
+        .overlay(alignment: .bottomTrailing) {
+            if !manager.title.isEmpty {
+                VStack {
+                    Spacer(minLength: 0)
+
+                    Text(verbatim: "LYRICS SLOT OVERLAY")
+                        .font(HomeTypography.metaFont)
+                        .foregroundStyle(HomeTypography.tertiaryText.opacity(0.7))
+                        .lineLimit(1)
+
+                    Spacer(minLength: 0)
+                }
+                    .frame(width: 280, height: 84)
+                    .padding(.trailing, 36)
+                    .padding(.bottom, 72)
+                    .allowsHitTesting(false)
+            }
+        }
     }
 
     private var albumArt: some View {
