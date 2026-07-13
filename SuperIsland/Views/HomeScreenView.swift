@@ -91,6 +91,7 @@ struct HomeScreenView: View {
 
 private struct HomeNowPlayingPanel: View {
     @ObservedObject private var manager = NowPlayingManager.shared
+    @ObservedObject private var lyricsManager = LyricsManager.shared
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -123,6 +124,21 @@ private struct HomeNowPlayingPanel: View {
 
                     sliderSection
                 }
+            }
+        }
+        .overlay(alignment: .bottomTrailing) {
+            if !manager.title.isEmpty {
+                LyricsScrollerView(
+                    lines: lyricsManager.lines,
+                    currentTime: manager.displayElapsedTime,
+                    isMusicSource: manager.lyricsSourceEvaluation.isMusicSource,
+                    plainTextLines: lyricsManager.plainTextLines,
+                    state: lyricsManager.state
+                )
+                .frame(width: 460, height: 96)
+                .padding(.trailing, 48)
+                .padding(.bottom, 28)
+                .allowsHitTesting(false)
             }
         }
     }
