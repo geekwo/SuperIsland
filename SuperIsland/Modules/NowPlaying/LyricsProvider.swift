@@ -176,16 +176,3 @@ private struct LRCLIBSearchResult: Decodable {
         }
     }
 }
-
-struct NeteaseLyricsProvider: LyricsProvider {
-    let id = "netease"
-    let displayName = "Netease Cloud Music"
-
-    func searchLyrics(
-        title: String,
-        artist: String?,
-        duration: TimeInterval?
-    ) async throws -> [LyricLine] {
-        throw LyricsProviderError.noLyrics
-    }
-}

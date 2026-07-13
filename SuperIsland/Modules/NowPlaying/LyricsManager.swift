@@ -24,14 +24,19 @@ final class LyricsManager: ObservableObject {
     @Published private(set) var state: LyricsLoadState = .idle
 
     private let providers: [any LyricsProvider]
+    private let netEaseProvider: NetEaseLyricsProvider
     private var cache: [LyricsCacheKey: LyricsCacheEntry] = [:]
     private var currentKey: LyricsCacheKey?
     private var lastExcludedSignature: String?
     private var loadTask: Task<Void, Never>?
     private var cancellables = Set<AnyCancellable>()
 
-    init(providers: [any LyricsProvider] = [LRCLIBLyricsProvider(), NeteaseLyricsProvider()]) {
+    init(
+        providers: [any LyricsProvider] = [LRCLIBLyricsProvider()],
+        netEaseProvider: NetEaseLyricsProvider = NetEaseLyricsProvider()
+    ) {
         self.providers = providers
+        self.netEaseProvider = netEaseProvider
         observeNowPlaying()
     }
 
@@ -112,7 +117,8 @@ final class LyricsManager: ObservableObject {
         let key = LyricsCacheKey(
             title: normalizedTitle,
             artist: normalizedArtist,
-            duration: duration
+            duration: duration,
+            sourceKind: Self.isNetEaseSource(sourceEvaluation) ? "netease" : "default"
         )
         guard key != currentKey else { return }
         currentKey = key
@@ -129,7 +135,9 @@ final class LyricsManager: ObservableObject {
         state = .loading
 
         let providers = providers
+        let netEaseProvider = netEaseProvider
         let requestedDuration = duration > 0 ? duration : nil
+        let shouldUseNetEaseProvider = Self.isNetEaseSource(sourceEvaluation)
 
         #if DEBUG
         print("[Lyrics] request title=\(normalizedTitle), artist=\(normalizedArtist), source=\(sourceEvaluation.sourceDescription)")
@@ -138,6 +146,8 @@ final class LyricsManager: ObservableObject {
         loadTask = Task { [weak self] in
             let entry = await Self.fetchLyrics(
                 providers: providers,
+                netEaseProvider: netEaseProvider,
+                shouldUseNetEaseProvider: shouldUseNetEaseProvider,
                 title: normalizedTitle,
                 artist: normalizedArtist.isEmpty ? nil : normalizedArtist,
                 duration: requestedDuration
@@ -153,11 +163,34 @@ final class LyricsManager: ObservableObject {
 
     private static func fetchLyrics(
         providers: [any LyricsProvider],
+        netEaseProvider: NetEaseLyricsProvider,
+        shouldUseNetEaseProvider: Bool,
         title: String,
         artist: String?,
         duration: TimeInterval?
     ) async -> LyricsCacheEntry {
         var lastError: Error?
+
+        if shouldUseNetEaseProvider {
+            guard !Task.isCancelled else {
+                return .unavailable("Lyrics request cancelled.")
+            }
+
+            do {
+                let lines = try await netEaseProvider.searchLyrics(
+                    title: title,
+                    artist: artist,
+                    duration: duration
+                )
+                if !lines.isEmpty {
+                    return .loaded(lines)
+                }
+            } catch LyricsProviderError.noLyrics {
+                // Fall back to LRCLIB.
+            } catch {
+                lastError = error
+            }
+        }
 
         for provider in providers {
             guard !Task.isCancelled else {
@@ -257,17 +290,34 @@ final class LyricsManager: ObservableObject {
         let index = lowerBound - 1
         return index >= 0 ? index : nil
     }
+
+    private static func isNetEaseSource(_ sourceEvaluation: LyricsSourceEvaluation) -> Bool {
+        let sourceText = "\(sourceEvaluation.sourceName) \(sourceEvaluation.bundleIdentifier) \(sourceEvaluation.reason)"
+            .folding(options: [.diacriticInsensitive, .caseInsensitive, .widthInsensitive], locale: .current)
+            .lowercased()
+
+        return [
+            "netease",
+            "cloudmusic",
+            "163music",
+            "com.netease",
+            "网易云",
+            "网易云音乐"
+        ].contains { sourceText.contains($0) }
+    }
 }
 
 private struct LyricsCacheKey: Hashable {
     let title: String
     let artist: String
     let duration: Int?
+    let sourceKind: String
 
-    init(title: String, artist: String, duration: TimeInterval) {
+    init(title: String, artist: String, duration: TimeInterval, sourceKind: String) {
         self.title = Self.normalize(title)
         self.artist = Self.normalize(artist)
         self.duration = duration > 0 ? Int(duration.rounded()) : nil
+        self.sourceKind = sourceKind
     }
 
     private static func normalize(_ value: String) -> String {
